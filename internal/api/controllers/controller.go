@@ -69,3 +69,16 @@ func (e *Controller) UpdateSkills() gin.HandlerFunc{
 		ctx.Status(http.StatusOK)
 	}
 }
+
+func(e *Controller) DeleteSkill() gin.HandlerFunc{
+	return func(ctx *gin.Context){
+		memberId := ctx.Param("id")
+		skillName := ctx.Param("name")
+
+		err:= e.memberResponse.DeleteMemberSkill(memberId, skillName)
+		if err != nil {
+			ctx.String(http.StatusInternalServerError, "request could not be processed.")
+			return
+		}
+	}
+}
