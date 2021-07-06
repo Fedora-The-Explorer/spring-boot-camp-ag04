@@ -48,10 +48,10 @@ func createMembersTable (db *sql.DB) {
 
 func createMemberSkillsTable (db *sql.DB) {
 	createSkillsTableSQL := `CREATE TABLE memberSkills (
-		"id" TEXT NOT NULL PRIMARY KEY,
+    	"memberId" TEXT NOT NULL,
+		"skillId" TEXT NOT NULL PRIMARY KEY,
 		"name" TEXT NOT NULL,
-		"level" TEXT,
-		"memberId" TEXT NOT NULL
+		"level" TEXT
 	);`
 
 	log.Println("Creating member skills table...")
