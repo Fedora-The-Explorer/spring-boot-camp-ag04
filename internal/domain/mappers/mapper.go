@@ -1,8 +1,10 @@
 package mappers
 
 import (
+	"fmt"
 	"github.com/nu7hatch/gouuid"
 	"log"
+	"time"
 
 	domainmodels "elProfessor/internal/api/controllers/models"
 	storagemodels "elProfessor/internal/infrastructure/sqlite/models"
@@ -84,4 +86,59 @@ func(m *HeistMapper) MapDomainSkillsToStorageSkills(memberSkillsUpdateDto domain
 	mainSkill := memberSkillsUpdateDto.MainSkill
 
 	return memberSkills, skills, mainSkill
+}
+
+func(m *HeistMapper) MapDomainHeistToStorageHeist(heistDto domainmodels.HeistDto) (storagemodels.Heist,[]storagemodels.Skill,[]storagemodels.HeistSkill){
+	heistId, err := uuid.NewV4()
+	if err != nil {
+		log.Fatalf("%s: %s", "failed to create uuid", err)
+	}
+
+
+	layout := "2006-01-02T15:04:05.000Z"
+	startTime, err := time.Parse(layout, heistDto.StartTime)
+	if err != nil {
+		fmt.Println(err)
+	}
+	endTime, err := time.Parse(layout, heistDto.EndTime)
+	if err != nil {
+		fmt.Println(err)
+	}
+	
+	heist := storagemodels.Heist{
+		Id:        heistId.String(),
+		Name:      heistDto.Name,
+		Location:  heistDto.Location,
+		StartTime: startTime,
+		EndTime:   endTime,
+	}
+
+	var skills []storagemodels.Skill
+	var heistSkills []storagemodels.HeistSkill
+
+	for _, skill := range heistDto.Skills {
+		skillId, err := uuid.NewV4()
+		if err != nil {
+			log.Fatalf("%s: %s", "failed to create uuid", err)
+		}
+		currentSkill := storagemodels.Skill{
+			Id: skillId.String(),
+			Name: skill.Name,
+		}
+
+
+		currentMemberSkill := storagemodels.HeistSkill{
+			SkillId: skillId.String(),
+			HeistId: heistId.String(),
+			Level: skill.Level,
+			Members: skill.Members,
+		}
+
+		skills = append(skills, currentSkill)
+		heistSkills = append(heistSkills, currentMemberSkill)
+
+	}
+
+	return heist, skills, heistSkills
+	
 }

@@ -11,13 +11,15 @@ import (
 // Controller implements handlers for web server requests.
 type Controller struct {
 	memberResponse MemberResponse
+	heistResponse HeistResponse
 	memberValidator MemberValidator
 }
 
 // NewController creates a new instance of Controller
-func NewController(memberResponse MemberResponse, memberValidator MemberValidator) *Controller {
+func NewController(memberResponse MemberResponse, heistResponse HeistResponse ,memberValidator MemberValidator) *Controller {
 	return &Controller{
 		memberResponse: memberResponse,
+		heistResponse: heistResponse,
 		memberValidator: memberValidator,
 	}
 }
@@ -80,5 +82,23 @@ func(e *Controller) DeleteSkill() gin.HandlerFunc{
 			ctx.String(http.StatusInternalServerError, "request could not be processed.")
 			return
 		}
+	}
+}
+
+func(e *Controller) HeistAdd() gin.HandlerFunc {
+	return func(ctx *gin.Context){
+		var heistDto models.HeistDto
+		err := ctx.ShouldBindWith(&heistDto, binding.JSON)
+		if err != nil {
+			ctx.String(http.StatusBadRequest, "post request is not valid")
+			return
+		}
+
+		err = e.heistResponse.InsertHeist(heistDto)
+		if err != nil {
+			ctx.String(http.StatusInternalServerError, "request could not be processed.")
+			return
+		}
+		ctx.Status(http.StatusOK)
 	}
 }

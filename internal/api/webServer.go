@@ -13,6 +13,7 @@ import (
 const memberAdd = "/member"
 const updateMemberSkills = "/member/:id/skills"
 const deleteMemberSKill = "/member/:id/skills/:name"
+const heistAdd = "/heist"
 
 // WebServer Api server
 type WebServer struct {
@@ -74,6 +75,7 @@ func (w *WebServer) registerRoutes(ctrl Controller) {
 	w.router.POST(memberAdd, ctrl.PostMember())
 	w.router.PUT(updateMemberSkills, ctrl.UpdateSkills())
 	w.router.DELETE(deleteMemberSKill, ctrl.DeleteSkill())
+	w.router.POST(heistAdd, ctrl.PostHeist())
 }
 
 // Controller handles api calls
@@ -81,4 +83,5 @@ type Controller interface {
 	PostMember() gin.HandlerFunc
 	UpdateSkills() gin.HandlerFunc
 	DeleteSkill() gin.HandlerFunc
+	PostHeist() gin.HandlerFunc
 }
