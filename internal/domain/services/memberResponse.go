@@ -22,3 +22,7 @@ func (m MemberResponse) InsertMember(memberDto domainmodels.MemberDto) error {
 func (m MemberResponse) UpdateMemberSkills(ctx context.Context,memberSkillsUpdate domainmodels.MemberSkillsUpdateDto, memberId string) error {
 	return m.UpdateMemberSkills(ctx, memberSkillsUpdate, memberId)
 }
+
+func (m MemberResponse) DeleteMemberSkill(memberId string, skillName string) error {
+	return m.DeleteMemberSkill(memberId,skillName)
+}

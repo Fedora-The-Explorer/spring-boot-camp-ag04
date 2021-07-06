@@ -8,4 +8,5 @@ import (
 type MemberHandler interface {
 	InsertMember(memberDto domainmodels.MemberDto) error
 	UpdateMemberSkills(ctx context.Context, memberSkillsUpdate domainmodels.MemberSkillsUpdateDto, memberId string) error
+	DeleteMemberSKill(memberId string, skillName string) error
 }

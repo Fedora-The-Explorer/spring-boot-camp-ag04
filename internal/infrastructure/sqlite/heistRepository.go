@@ -141,3 +141,12 @@ func(r *HeistRepository) UpsertSkills(skills []storagemodels.MemberSkill, id str
 		r.dbExecutor.Exec("IF NOT EXISTS (SELECT * FROM memberSkills WHERE memberId ='" + id + "'AND skillId = '" + skill.SkillId + "') INSERT INTO memberSkills VALUES '" + skill.MemberId + "','" + skill.SkillId + "','" + skill.Name + "','" + skill.Level + "'ELSE UPDATE memberSkills SET name = '" + skill.Name + "', level = '" + skill.Level + "'WHERE memberId = '" + id + "'AND skillId = '" + skill.SkillId + "';")
 	}
 }
+
+func(r *HeistRepository) DeleteMemberSkill(memberId, skillName string) error{
+	skillId, err := r.GetSkillIdByNameQuery(skillName)
+	if err != nil {
+		return err
+	}
+	r.dbExecutor.Exec("DELETE FROM memberSkills WHERE memberId ='" + memberId + "'AND skillId='" + skillId + "';")
+	return nil
+}
