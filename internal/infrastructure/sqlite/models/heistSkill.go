@@ -1,7 +1,7 @@
 package models
 
 type HeistSkill struct {
-	Id string
+	SkillId string
 	HeistId string
 	Level string
 	Members int
