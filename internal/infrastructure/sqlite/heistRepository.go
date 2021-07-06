@@ -43,6 +43,8 @@ func(r *HeistRepository) InsertMember(memberDto domainmodels.MemberDto) error {
 	for _, skill := range storageMemberSkills{
 		if len(skill.Level) == 0{	// makes the default value of a skill level *
 			skill.Level = "*"
+		}else if len(skill.Level) > 10{
+			skill.Level = "**********"
 		}
 		r.dbExecutor.Exec("INSERT INTO skills VALUES ('" + skill.MemberId + "', '"+ skill.SkillId + "', '"+ skill.Name + "', '"+ skill.Level + "');")
 	}
@@ -131,8 +133,6 @@ func(r *HeistRepository) UpdateMemberSkills(ctx context.Context, memberSkillsDto
 		r.dbExecutor.Exec("UPDATE members SET main_skill='" + mainSkill + "'WHERE id='" + id + "';")
 		r.UpsertSkills(storageMemberSkills, id)
 	}
-
-
 	return nil
 }
 
@@ -171,12 +171,12 @@ func(r *HeistRepository) InsertHeist(heistDto domainmodels.HeistDto) error {
 	for _, skill := range storageHeistSkills{
 		if len(skill.Level) == 0{	// makes the default value of a skill level *
 			skill.Level = "*"
+		}else if len(skill.Level) > 10{
+			skill.Level = "**********"
 		}
 		r.dbExecutor.Exec("INSERT INTO skills VALUES ('" + skill.SkillId + "', '"+ skill.HeistId + "', '"+ skill.Level + "','"+ skill.Members + "');")
 
 	}
-	return nil
-
 	return nil
 }
 
@@ -223,5 +223,23 @@ func (r *HeistRepository) CheckUniqueName(heist storagemodels.Heist) (bool, erro
 	} else {
 		return true, nil
 	}
+}
+
+func(r *HeistRepository) UpdateHeistSkills(ctx context.Context, skills domainmodels.HeistSkillsDto, id string) error{
+	storageHeistSkills, storageSkills := r.heistMapper.MapDomainHeistSkillsToStorageHeistSkills(skills, id)
+	storageHeistSkills = r.CheckAndInsertHeistSkills(storageSkills, storageHeistSkills)
+
+	// if getting errors from the query check the go sdk sql drivers
+	for _, skill := range storageHeistSkills{
+		if len(skill.Level) == 0{	// makes the default value of a skill level *
+			skill.Level = "*"
+		}else if len(skill.Level) > 10{
+			skill.Level = "**********"
+		}
+		r.dbExecutor.Exec("INSERT INTO skills VALUES ('" + skill.SkillId + "', '"+ skill.HeistId + "', '"+ skill.Level + "','"+ skill.Members + "');")
+
+	}
+
+	return nil
 }
 

@@ -142,3 +142,30 @@ func(m *HeistMapper) MapDomainHeistToStorageHeist(heistDto domainmodels.HeistDto
 	return heist, skills, heistSkills
 	
 }
+
+func(m *HeistMapper) MapDomainHeistSkillsToStorageHeistSkills(heistSkills domainmodels.HeistSkillsDto, id string) ([]storagemodels.HeistSkill, []storagemodels.Skill) {
+	var skills []storagemodels.Skill
+	var memberSkills []storagemodels.HeistSkill
+	for _, skill := range heistSkills {
+		skillId, err := uuid.NewV4()
+		if err != nil {
+			log.Fatalf("%s: %s", "failed to create uuid", err)
+		}
+		currentSkill := storagemodels.Skill{
+			Id: skillId.String(),
+			Name: skill.Name,
+		}
+
+		currentMemberSkill := storagemodels.HeistSkill{
+			SkillId: skillId.String(),
+			HeistId: id,
+			Level: skill.Level,
+			Members: skill.Members,
+		}
+
+		skills = append(skills, currentSkill)
+		memberSkills = append(memberSkills, currentMemberSkill)
+	}
+
+	return memberSkills, skills
+}

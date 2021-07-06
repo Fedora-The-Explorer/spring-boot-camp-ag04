@@ -13,14 +13,16 @@ type Controller struct {
 	memberResponse MemberResponse
 	heistResponse HeistResponse
 	memberValidator MemberValidator
+	heistValidator HeistValidator
 }
 
 // NewController creates a new instance of Controller
-func NewController(memberResponse MemberResponse, heistResponse HeistResponse ,memberValidator MemberValidator) *Controller {
+func NewController(memberResponse MemberResponse, heistResponse HeistResponse ,memberValidator MemberValidator, heistValidator HeistValidator) *Controller {
 	return &Controller{
 		memberResponse: memberResponse,
 		heistResponse: heistResponse,
 		memberValidator: memberValidator,
+		heistValidator: heistValidator,
 	}
 }
 
@@ -41,10 +43,10 @@ func (e *Controller) PostMember() gin.HandlerFunc{
 
 		err = e.memberResponse.InsertMember(memberDto)
 		if err != nil {
-			ctx.String(http.StatusInternalServerError, "request could not be processed.")
+			ctx.String(http.StatusBadRequest, "request could not be processed.")
 			return
 		}
-		ctx.Status(http.StatusOK)
+		ctx.Status(http.StatusCreated)
 	}
 }
 
@@ -59,16 +61,16 @@ func (e *Controller) UpdateSkills() gin.HandlerFunc{
 		}
 
 		if !e.memberValidator.MemberSkillsUpdateValidator(memberSkillsUpdateDto) {
-			ctx.String(http.StatusBadRequest, "given member data is not valid")
+			ctx.String(http.StatusBadRequest, "given skill data is not valid")
 			return
 		}
 
 		err = e.memberResponse.UpdateMemberSkills(ctx, memberSkillsUpdateDto, memberId)
 		if err != nil {
-			ctx.String(http.StatusInternalServerError, "request could not be processed.")
+			ctx.String(http.StatusNotFound, "request could not be processed.")
 			return
 		}
-		ctx.Status(http.StatusOK)
+		ctx.Status(http.StatusNoContent)
 	}
 }
 
@@ -79,9 +81,10 @@ func(e *Controller) DeleteSkill() gin.HandlerFunc{
 
 		err:= e.memberResponse.DeleteMemberSkill(memberId, skillName)
 		if err != nil {
-			ctx.String(http.StatusInternalServerError, "request could not be processed.")
+			ctx.String(http.StatusNotFound, "request could not be processed.")
 			return
 		}
+		ctx.Status(http.StatusNoContent)
 	}
 }
 
@@ -96,9 +99,33 @@ func(e *Controller) HeistAdd() gin.HandlerFunc {
 
 		err = e.heistResponse.InsertHeist(heistDto)
 		if err != nil {
-			ctx.String(http.StatusInternalServerError, "request could not be processed.")
+			ctx.String(http.StatusBadRequest, "request could not be processed.")
 			return
 		}
-		ctx.Status(http.StatusOK)
+		ctx.Status(http.StatusCreated)
+	}
+}
+
+func(e *Controller) UpdateHeistSkills() gin.HandlerFunc {
+	return func(ctx *gin.Context){
+		heistId := ctx.Param("id")
+		var heistSkills models.HeistSkillsDto
+		err := ctx.ShouldBindWith(&heistSkills, binding.JSON)
+		if err != nil {
+			ctx.String(http.StatusBadRequest, "patch request is not valid")
+		}
+
+		if !e.heistValidator.HeistSkillUpdateValidator(heistSkills) {
+			ctx.String(http.StatusBadRequest, "given skill data is not valid")
+			return
+		}
+
+		err = e.heistResponse.UpdateHeistSkills(ctx, heistSkills, heistId)
+		if err != nil {
+			ctx.String(http.StatusMethodNotAllowed, "request could not be processed.")
+			return
+		}
+		ctx.Status(http.StatusNoContent)
+
 	}
 }
