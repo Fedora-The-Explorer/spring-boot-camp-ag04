@@ -171,3 +171,21 @@ func (e *Controller) AddMembersToHeist() gin.HandlerFunc{
 		ctx.Status(http.StatusNoContent)
 	}
 }
+
+func (e *Controller) StartHeist() gin.HandlerFunc{
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		code, err := e.heistResponse.StartHeist(id)
+		if err != nil {
+			if code == "404"{
+				ctx.String(http.StatusNotFound, "heist not found")
+				return
+			} else {
+				ctx.String(http.StatusMethodNotAllowed, "not allowed due to wrong heist status")
+				return
+			}
+		}
+		ctx.Status(http.StatusOK)
+
+	}
+}

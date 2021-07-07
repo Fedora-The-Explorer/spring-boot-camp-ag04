@@ -437,3 +437,12 @@ func (r *HeistRepository) checkHeist(id string, heistStatus string) (string, err
 	return "", nil
 }
 
+func(r *HeistRepository) StartHeist(id string) (string, error){
+	code, err := r.checkHeist(id, "READY")
+	if err != nil {
+		return code, err
+	}
+	inProgress := "IN_PROGRESS"
+	r.dbExecutor.Exec("UPDATE heists SET status='" + inProgress + "'WHERE id='" + id + "';")
+	return "", nil
+}
