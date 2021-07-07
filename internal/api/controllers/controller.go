@@ -129,3 +129,20 @@ func(e *Controller) UpdateHeistSkills() gin.HandlerFunc {
 
 	}
 }
+
+func (e *Controller) EligibleMembers() gin.HandlerFunc{
+	return func(ctx *gin.Context){
+		id := ctx.Param("id")
+		members, exists, err := e.memberResponse.GetEligibleMembers(ctx, id)
+		if err != nil {
+			ctx.String(http.StatusMethodNotAllowed, "request could not be processed")
+			return
+		}
+		if !exists {
+			ctx.String(http.StatusNotFound, "failed to get bets with given id")
+			return
+		}
+
+		ctx.JSON(http.StatusOK, members)
+	}
+}

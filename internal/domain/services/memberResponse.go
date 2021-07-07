@@ -26,3 +26,7 @@ func (m MemberResponse) UpdateMemberSkills(ctx context.Context,memberSkillsUpdat
 func (m MemberResponse) DeleteMemberSkill(memberId string, skillName string) error {
 	return m.DeleteMemberSkill(memberId,skillName)
 }
+
+func (m MemberResponse) GetEligibleMembers(ctx context.Context, id string) (domainmodels.EligibleMemberDto, bool, error){
+	return m.GetEligibleMembers(ctx, id)
+}

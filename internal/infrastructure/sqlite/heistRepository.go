@@ -243,3 +243,141 @@ func(r *HeistRepository) UpdateHeistSkills(ctx context.Context, skills domainmod
 	return nil
 }
 
+func(r *HeistRepository) GetEligibleMembers(ctx context.Context, id string) (domainmodels.EligibleMemberDto, bool, error){
+	var eligible domainmodels.EligibleMemberDto
+	heistSkills, err := r.queryGetSkillsByHeistIdEligible(ctx, id)
+	if err != nil {
+		return domainmodels.EligibleMemberDto{}, false, err
+	}
+	var memberSkills []storagemodels.MemberSkill
+ 	for _,skill:= range heistSkills{
+		memberSkills = append(memberSkills, r.queryGetSkillsByIdEligible(ctx, skill.SkillId, skill.Level))
+	}
+
+	var members []storagemodels.Member
+ 	for _,skill := range memberSkills{
+ 		members = append(members, r.queryGetMemberByIdEligible(ctx, skill.MemberId))
+	}
+
+	for idx,skill:= range heistSkills{
+		eligible.Skills[idx].Name, err = r.queryGetSkillNameById(ctx, skill.SkillId)
+		if err != nil {
+			return domainmodels.EligibleMemberDto{}, false, err
+		}
+		eligible.Skills[idx].Level =  skill.Level
+		eligible.Skills[idx].Members = skill.Members
+	}
+
+	for idx, member := range members {
+		eligible.Members[idx].Name = member.Name
+		idy := 0
+		for _, skill := range memberSkills {
+			if member.Id == skill.MemberId {
+				eligible.Members[idx].Skills[idy].Name = skill.Name
+				eligible.Members[idx].Skills[idy].Name = skill.Level
+				idy++
+			}
+		}
+	}
+	return eligible, true, nil
+}
+
+func (r *HeistRepository) queryGetSkillsByHeistIdEligible(ctx context.Context, id string) ([]storagemodels.HeistSkill, error) {
+	row, err := r.dbExecutor.QueryContext(ctx, "SELECT * FROM heistSkills WHERE heistId='"+id+"';")
+	if err != nil {
+		return []storagemodels.HeistSkill{}, err
+	}
+
+	defer row. Close()
+	var skills []storagemodels.HeistSkill
+
+	for row.Next(){
+		var skillId string
+		var heistId string
+		var level string
+		var members int
+
+		err = row.Scan(&skillId, &heistId, &level, &members)
+		if err != nil {
+			return []storagemodels.HeistSkill{}, err
+		}
+		skills = append(skills, storagemodels.HeistSkill{
+			SkillId: skillId,
+			HeistId: heistId,
+			Level: level,
+			Members: members,
+		})
+
+	}
+	return skills, nil
+}
+
+func (r *HeistRepository) queryGetSkillsByIdEligible(ctx context.Context, id string, skillLevel string) storagemodels.MemberSkill {
+	row, err := r.dbExecutor.QueryContext(ctx, "SELECT * FROM memberSkills WHERE (skillId='"+id+ "'AND level >='" + skillLevel + "');")
+	if err != nil {
+		panic(err)
+	}
+	defer row. Close()
+
+	var memberId string
+	var skillId string
+	var name string
+	var level string
+
+	err = row.Scan(&memberId, &skillId, &name, &level)
+	if err != nil {
+		panic(err)
+	}
+
+	return storagemodels.MemberSkill{
+		MemberId: memberId,
+		SkillId: skillId,
+		Name: name,
+		Level: level,
+	}
+}
+
+func (r *HeistRepository) queryGetMemberByIdEligible(ctx context.Context, id string) storagemodels.Member {
+	status1, status2 := "AVAILABLE", "RETIRED"
+	row, err := r.dbExecutor.QueryContext(ctx, "SELECT * FROM members WHERE id='"+id+"' AND (status='" + status1 + "'OR status='" + status2 + "');")
+	if err != nil {
+		panic(err)
+	}
+	defer row. Close()
+
+	var memberId string
+	var name string
+	var sex string
+	var email string
+	var mainSkill string
+	var status string
+
+	err = row.Scan(&memberId, &name, &sex, &email, &mainSkill, &status)
+	if err != nil {
+		panic(err)
+	}
+
+	return storagemodels.Member{
+		Id: memberId,
+		Name: name,
+		Sex: sex,
+		Email: email,
+		MainSkillId: mainSkill,
+		Status: status,
+	}
+}
+
+func (r *HeistRepository) queryGetSkillNameById(ctx context.Context, id string) (string, error) {
+	row, err := r.dbExecutor.QueryContext(ctx, "SELECT * FROM members WHERE id='"+id+"';")
+	if err != nil {
+		return "", err
+	}
+	defer row.Close()
+
+	var name string
+	err = row.Scan(&name)
+	if err != nil {
+		return "", err
+	}
+	return name, nil
+}
