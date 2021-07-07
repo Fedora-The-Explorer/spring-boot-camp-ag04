@@ -166,7 +166,8 @@ func(r *HeistRepository) InsertHeist(heistDto domainmodels.HeistDto) error {
 		return err
 	}
 	// if getting errors from the query check the go sdk sql drivers
-	r.dbExecutor.Exec("INSERT INTO heists VALUES ('" + storageHeist.Id + "', '"+ storageHeist.Name + "', '"+ storageHeist.Location + "', '"+ storageHeist.StartTime + "', '"+ storageHeist.EndTime + "');")
+	defaultStatus := "PLANNING"
+	r.dbExecutor.Exec("INSERT INTO heists VALUES ('" + storageHeist.Id + "', '"+ storageHeist.Name + "', '"+ storageHeist.Location + "', '"+ storageHeist.StartTime + "', '"+ storageHeist.EndTime + "', '" + defaultStatus + "');")
 
 	for _, skill := range storageHeistSkills{
 		if len(skill.Level) == 0{	// makes the default value of a skill level *
@@ -174,7 +175,7 @@ func(r *HeistRepository) InsertHeist(heistDto domainmodels.HeistDto) error {
 		}else if len(skill.Level) > 10{
 			skill.Level = "**********"
 		}
-		r.dbExecutor.Exec("INSERT INTO skills VALUES ('" + skill.SkillId + "', '"+ skill.HeistId + "', '"+ skill.Level + "','"+ skill.Members + "');")
+		r.dbExecutor.Exec("INSERT INTO heistSkills VALUES ('" + skill.SkillId + "', '"+ skill.HeistId + "', '"+ skill.Level + "','"+ skill.Members + "');")
 
 	}
 	return nil
