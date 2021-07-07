@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"golang.org/x/sys/unix"
 
 	domainmodels "elProfessor/internal/api/controllers/models"
 	storagemodels "elProfessor/internal/infrastructure/sqlite/models"
@@ -346,6 +347,8 @@ func (r *HeistRepository) queryGetMemberByIdEligible(ctx context.Context, id str
 	}
 	defer row. Close()
 
+
+
 	var memberId string
 	var name string
 	var sex string
@@ -357,8 +360,7 @@ func (r *HeistRepository) queryGetMemberByIdEligible(ctx context.Context, id str
 	if err != nil {
 		panic(err)
 	}
-
-	return storagemodels.Member{
+	possibleMember := storagemodels.Member {
 		Id: memberId,
 		Name: name,
 		Sex: sex,
@@ -366,6 +368,11 @@ func (r *HeistRepository) queryGetMemberByIdEligible(ctx context.Context, id str
 		MainSkillId: mainSkill,
 		Status: status,
 	}
+	err = r.checkPossibleHeistMember(possibleMember)
+	if err != nil {
+		panic(err)
+	}
+	return possibleMember
 }
 
 func (r *HeistRepository) queryGetSkillNameById(ctx context.Context, id string) (string, error) {
@@ -446,3 +453,121 @@ func(r *HeistRepository) StartHeist(id string) (string, error){
 	r.dbExecutor.Exec("UPDATE heists SET status='" + inProgress + "'WHERE id='" + id + "';")
 	return "", nil
 }
+
+func (r *HeistRepository) checkPossibleHeistMember(member storagemodels.Member) error {
+	row, err := r.dbExecutor.QueryContext(context.Background(), "SELECT memberId FROM heistMembers;")
+	for row.Next(){
+		var memberId string
+		err = row.Scan(&memberId)
+		if err != nil {
+			return err
+		}
+		if memberId == member.Id{
+			return err
+		}
+
+	}
+	return nil
+}
+
+func (r *HeistRepository) GetMemberByID(ctx context.Context, id string) (domainmodels.MemberDto, bool, error){
+	storageMember, err := r.queryGetMemberByID(ctx, id)
+	if err != nil {
+		return domainmodels.MemberDto{}, false, err
+	}
+	storageSkills, err := r.queryGetMemberSkillsByID(ctx, id)
+	if err != nil {
+		return domainmodels.MemberDto{}, false, err
+	}
+	mainSkillName, err := r.queryGetSkillNameById(ctx, storageMember.MainSkillId)
+	if err != nil {
+		return domainmodels.MemberDto{}, false, err
+	}
+	domainMember := domainmodels.MemberDto{
+		Name: storageMember.Name,
+		Sex: storageMember.Sex,
+		Email: storageMember.Email,
+		MainSkill: mainSkillName,
+		Status: storageMember.Status,
+	}
+
+	for idx, skills := range storageSkills{
+		domainMember.Skills[idx].Name = skills.Name
+		domainMember.Skills[idx].Level = skills.Level
+	}
+	return domainMember, true, nil
+}
+
+func (r *HeistRepository) queryGetMemberByID(ctx context.Context, id string) (storagemodels.Member, error) {
+	row, err := r.dbExecutor.QueryContext(ctx, "SELECT * FROM members WHERE id='"+id+"';")
+	if err != nil {
+		return storagemodels.Member{}, err
+	}
+	defer row.Close()
+
+	var idx string
+	var name string
+	var sex string
+	var email string
+	var mainSkillId string
+	var status string
+
+	err = row.Scan(&idx, &name, &sex, &email, &mainSkillId, &status)
+	if err != nil {
+		return storagemodels.Member{}, err
+	}
+
+	return storagemodels.Member{
+		Id: idx,
+		Name: name,
+		Sex: sex,
+		Email: email,
+		MainSkillId: mainSkillId,
+		Status: status,
+	}, nil
+}
+
+func (r *HeistRepository) queryGetMemberSkillsByID(ctx context.Context, id string) ([]storagemodels.MemberSkill, error) {
+	row, err := r.dbExecutor.QueryContext(ctx, "SELECT * FROM memberSkills WHERE memberId='"+id+"';")
+	if err != nil {
+		return []storagemodels.MemberSkill{}, err
+	}
+	defer row.Close()
+
+	var skills []storagemodels.MemberSkill
+
+	for row.Next(){
+		var memberId string
+		var skillId string
+		var name string
+		var level string
+
+		err = row.Scan(&memberId, &skillId, &name, &level)
+		if err != nil {
+			return []storagemodels.MemberSkill{}, err
+		}
+
+		skills = append(skills, storagemodels.MemberSkill{
+			MemberId: memberId,
+			SkillId: skillId,
+			Name: name,
+			Level: level,
+		})
+	}
+	return skills, nil
+}
+
+func (r *HeistRepository) GetMemberSkillsById(ctx context.Context, id string) (domainmodels.MemberSkillsDto, bool, error){
+	storageSkills, err := r.queryGetMemberSkillsByID(ctx, id)
+	if err != nil {
+		return domainmodels.MemberSkillsDto{}, false, err
+	}
+	var domainSkills domainmodels.MemberSkillsDto
+	for idx, skill := range storageSkills{
+		domainSkills[idx].Name = skill.Name
+		domainSkills[idx].Level = skill.Level
+	}
+
+	return domainSkills, true, nil
+}
+

@@ -10,4 +10,6 @@ type MemberHandler interface {
 	UpdateMemberSkills(ctx context.Context, memberSkillsUpdate domainmodels.MemberSkillsUpdateDto, memberId string) error
 	DeleteMemberSKill(memberId string, skillName string) error
 	GetEligibleMembers(ctx context.Context, id string) (domainmodels.EligibleMemberDto, bool, error)
+	GetMemberById(ctx context.Context, id string) (domainmodels.MemberDto, bool, error)
+	GetMemberSkillsById(ctx context.Context, id string) (domainmodels.MemberSkillsDto, bool, error)
 }

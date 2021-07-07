@@ -189,3 +189,39 @@ func (e *Controller) StartHeist() gin.HandlerFunc{
 
 	}
 }
+
+func (e *Controller) GetMember() gin.HandlerFunc{
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		member, exists, err := e.memberResponse.GetMemberById(ctx, id)
+
+		if err != nil {
+			ctx.String(http.StatusBadRequest, "request could not be processed")
+			return
+		}
+		if !exists {
+			ctx.String(http.StatusNotFound, "failed to get member with given id")
+			return
+		}
+
+		ctx.JSON(http.StatusOK, member)
+	}
+}
+
+func (e *Controller) GetMemberSkills() gin.HandlerFunc{
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		skills, exists, err := e.memberResponse.GetMemberSkillsById(ctx, id)
+
+		if err != nil {
+			ctx.String(http.StatusBadRequest, "request could not be processed")
+			return
+		}
+		if !exists {
+			ctx.String(http.StatusNotFound, "failed to get member skills with given member id")
+			return
+		}
+
+		ctx.JSON(http.StatusOK, skills)
+	}
+}

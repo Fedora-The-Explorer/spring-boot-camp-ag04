@@ -11,4 +11,7 @@ type MemberResponse interface {
 	UpdateMemberSkills(ctx context.Context, memberSkillsUpdate models.MemberSkillsUpdateDto, memberId string) error
 	DeleteMemberSkill(memberId string, skillName string) error
 	GetEligibleMembers(ctx context.Context, id string) (models.EligibleMemberDto, bool, error)
+	GetMemberById(ctx context.Context, id string) (models.MemberDto, bool, error)
+	GetMemberSkillsById(ctx context.Context, id string) (models.MemberSkillsDto, bool, error)
+
 }
