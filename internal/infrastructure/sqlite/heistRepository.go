@@ -382,3 +382,58 @@ func (r *HeistRepository) queryGetSkillNameById(ctx context.Context, id string) 
 	}
 	return name, nil
 }
+
+func (r *HeistRepository) AddHeistMembers(members []string, id string) (string, error){
+	var memberIds []string
+	code, err := r.checkHeist(id, "PLANNING")
+	if err != nil {
+		return code, err
+	}
+
+	for _, member := range members{
+		memberIds = append(memberIds, r.queryGetMemberIdByName(member))
+	}
+
+	for _, idx := range memberIds{
+		r.dbExecutor.Exec("INSERT INTO heistMembers VALUES ('" + idx + "', '"+ id + "');")
+	}
+	ready := "READY"
+	r.dbExecutor.Exec("UPDATE heists SET status='" + ready + "'WHERE id='" + id + "';")
+
+	return code, nil
+}
+
+func (r *HeistRepository) queryGetMemberIdByName(member string) string {
+	row, err := r.dbExecutor.QueryContext(context.Background(), "SELECT id FROM members WHERE name='"+member+"';")
+	if err != nil {
+		panic(err)
+	}
+	var id string
+	err = row.Scan(&id)
+	if err != nil {
+		panic(err)
+	}
+	defer row.Close()
+	return id
+}
+
+func (r *HeistRepository) checkHeist(id string, heistStatus string) (string, error) {
+	row, err := r.dbExecutor.QueryContext(context.Background(), "SELECT status FROM heists WHERE id='"+id+"';")
+	if err != nil {
+		return "404", err
+	}
+	defer row.Close()
+
+	var status string
+	err = row.Scan(&status)
+	if err != nil {
+		return "404", err
+	}
+
+	if status != heistStatus {
+		return "405", err
+	}
+
+	return "", nil
+}
+

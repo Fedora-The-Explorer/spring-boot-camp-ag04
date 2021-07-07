@@ -22,3 +22,7 @@ func (m MemberResponse) InsertHeist(heistDto domainmodels.HeistDto) error {
 func (m MemberResponse) UpdateHeistSkills(ctx context.Context, heistSkills domainmodels.HeistSkillsDto, heistId string) error{
 	return m.UpdateHeistSkills(ctx, heistSkills,heistId)
 }
+
+func(m MemberResponse) 	AddHeistMembers(members []string, id string) (string,error){
+	return m.AddHeistMembers(members, id)
+}

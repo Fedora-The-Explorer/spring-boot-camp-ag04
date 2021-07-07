@@ -139,10 +139,35 @@ func (e *Controller) EligibleMembers() gin.HandlerFunc{
 			return
 		}
 		if !exists {
-			ctx.String(http.StatusNotFound, "failed to get bets with given id")
+			ctx.String(http.StatusNotFound, "failed to get heist with given id")
 			return
 		}
 
 		ctx.JSON(http.StatusOK, members)
+	}
+}
+
+func (e *Controller) AddMembersToHeist() gin.HandlerFunc{
+	return func(ctx *gin.Context){
+		id := ctx.Param("id")
+		var members []string
+		err := ctx.ShouldBindWith(&members, binding.JSON)
+		if err != nil {
+			ctx.String(http.StatusBadRequest, "request could not be processed")
+			return
+		}
+
+		code, err := e.heistResponse.AddHeistMembers(members, id)
+		if err != nil {
+			if code == "404"{
+				ctx.String(http.StatusNotFound, "heist not found")
+				return
+			} else {
+				ctx.String(http.StatusMethodNotAllowed, "not allowed due to wrong heist status")
+				return
+			}
+		}
+
+		ctx.Status(http.StatusNoContent)
 	}
 }
