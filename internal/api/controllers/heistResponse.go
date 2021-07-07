@@ -10,4 +10,5 @@ type HeistResponse interface {
 	InsertHeist(heistDto models.HeistDto) error
 	UpdateHeistSkills(ctx context.Context, heistSkills models.HeistSkillsDto, heistId string) error
 	AddHeistMembers(members []string, id string) (string,error)
+	StartHeist(id string) (string,error)
 }

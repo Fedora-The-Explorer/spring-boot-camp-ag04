@@ -15,14 +15,18 @@ func NewHeistResponse(heistHandler HeistHandler) *HeistResponse{
 	}
 }
 
-func (m MemberResponse) InsertHeist(heistDto domainmodels.HeistDto) error {
-	return m.InsertHeist(heistDto)
+func (h HeistResponse) InsertHeist(heistDto domainmodels.HeistDto) error {
+	return h.InsertHeist(heistDto)
 }
 
-func (m MemberResponse) UpdateHeistSkills(ctx context.Context, heistSkills domainmodels.HeistSkillsDto, heistId string) error{
-	return m.UpdateHeistSkills(ctx, heistSkills,heistId)
+func (h HeistResponse) UpdateHeistSkills(ctx context.Context, heistSkills domainmodels.HeistSkillsDto, heistId string) error{
+	return h.UpdateHeistSkills(ctx, heistSkills,heistId)
 }
 
-func(m MemberResponse) 	AddHeistMembers(members []string, id string) (string,error){
-	return m.AddHeistMembers(members, id)
+func(h HeistResponse) 	AddHeistMembers(members []string, id string) (string,error){
+	return h.AddHeistMembers(members, id)
+}
+
+func (h HeistResponse) 	StartHeist(id string) (string,error) {
+	return h.StartHeist(id)
 }
