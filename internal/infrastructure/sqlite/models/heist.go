@@ -8,4 +8,5 @@ type Heist struct {
 	Location string
 	StartTime time.Time
 	EndTime time.Time
+	Status string
 }
