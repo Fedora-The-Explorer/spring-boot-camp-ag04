@@ -654,3 +654,53 @@ func (r *HeistRepository) QueryGetHeistSkillsByHeistId(ctx context.Context, id s
 	}
 	return skills, nil
 }
+
+func (r *HeistRepository) GetHeistMembersByHeistId(ctx context.Context, id string) ([]domainmodels.MemberDto, bool, error){
+	memberIds, err := r.queryGetMemberIdByHeistId(ctx, id)
+	if err != nil {
+		return []domainmodels.MemberDto{}, true, err
+	}
+	var members []storagemodels.Member
+	var domainMembers []domainmodels.MemberDto
+
+	for _, oneId := range memberIds {
+		member, err := r.queryGetMemberByID(ctx, oneId)
+		if err != nil {
+			return []domainmodels.MemberDto{}, false, nil
+		}
+		members = append(members, member)
+	}
+
+	for _, member := range members {
+		skills,_, err := r.GetMemberSkillsById(ctx, member.Id)
+		if err != nil {
+			return []domainmodels.MemberDto{}, true, err
+		}
+		domainMembers = append(domainMembers, domainmodels.MemberDto{
+			Name: member.Name,
+			Skills: skills,
+				})
+	}
+	return domainMembers, true, nil
+}
+
+func (r *HeistRepository) queryGetMemberIdByHeistId(ctx context.Context, id string) ([]string, error) {
+	status := "PLANNING"
+	row, err := r.dbExecutor.QueryContext(ctx, "SELECT memberId FROM heistMembers WHERE heistId='"+id+ "', status!='" + status + "';")
+	if err != nil{
+		return nil, err
+	}
+
+	var ids []string
+	for row.Next(){
+		var memberId string
+
+		err = row.Scan(&memberId)
+		if err != nil {
+			return nil, err
+		}
+		ids = append(ids, memberId)
+	}
+	return ids, nil
+}
+

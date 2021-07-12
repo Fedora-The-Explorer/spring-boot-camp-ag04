@@ -234,10 +234,28 @@ func (e *Controller) GetHeist() gin.HandlerFunc {
 			return
 		}
 		if !exists {
-			ctx.String(http.StatusNotFound, "failed to get member skills with given member id")
+			ctx.String(http.StatusNotFound, "failed to get heist for a given heist id")
 			return
 		}
 
 		ctx.JSON(http.StatusOK, heist)
+	}
+}
+
+func (e *Controller) GetHeistMembers() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		members, exists, err := e.heistResponse.GetHeistMembersByHeistId(ctx, id)
+		if err != nil {
+			ctx.String(http.StatusMethodNotAllowed, "request could not be processed")
+			return
+		}
+		if !exists {
+			ctx.String(http.StatusNotFound, "failed to get member skills with given member id")
+			return
+		}
+
+		ctx.JSON(http.StatusOK, members)
+
 	}
 }

@@ -11,5 +11,5 @@ type HeistHandler interface {
 	AddHeistMembers(members []string, id string) (string,error)
 	StartHeist(id string) (string,error)
 	GetHeistById(ctx context.Context, id string) (domainmodels.HeistDto, bool, error)
-
+	GetHeistMembersByHeistId(ctx context.Context, id string) (domainmodels.MemberDto, bool, error)
 }
