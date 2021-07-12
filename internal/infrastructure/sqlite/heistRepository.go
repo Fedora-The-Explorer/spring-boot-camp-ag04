@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"golang.org/x/sys/unix"
+	"time"
 
 	domainmodels "elProfessor/internal/api/controllers/models"
 	storagemodels "elProfessor/internal/infrastructure/sqlite/models"
@@ -571,3 +572,85 @@ func (r *HeistRepository) GetMemberSkillsById(ctx context.Context, id string) (d
 	return domainSkills, true, nil
 }
 
+func (r *HeistRepository) GetHeistById(ctx context.Context, id string) (domainmodels.HeistDto, bool, error) {
+	storageHeist , err := r.queryGetHeistById(ctx, id)
+	storageHeistSkills, err := r.QueryGetHeistSkillsByHeistId(ctx, id)
+	if err != nil {
+		return domainmodels.HeistDto{}, false, err
+	}
+
+	domainHeist := domainmodels.HeistDto{
+		Name: storageHeist.Name,
+		Location: storageHeist.Location,
+		StartTime: storageHeist.StartTime.String(),
+		EndTime: storageHeist.EndTime.String(),
+		Skills: storageHeistSkills,
+		Status: storageHeist.Status,
+	}
+
+	return domainHeist, true, nil
+}
+
+func (r *HeistRepository) queryGetHeistById(ctx context.Context, id string) (storagemodels.Heist, error) {
+	row, err := r.dbExecutor.QueryContext(ctx, "SELECT * FROM members WHERE id='"+id+"';")
+	if err != nil {
+		return storagemodels.Heist{}, err
+	}
+	defer row.Close()
+
+		var idx string
+		var name string
+		var location string
+		var startTime time.Time
+		var endTime time.Time
+		var status string
+
+
+		err = row.Scan(&idx, &name, &location, &startTime, &endTime, &status)
+		if err != nil {
+			return storagemodels.Heist{}, err
+		}
+
+		var heist = storagemodels.Heist{
+			Id: idx,
+			Name: name,
+			Location: location,
+			StartTime: startTime,
+			EndTime: endTime,
+			Status: status,
+		}
+
+	return heist, nil
+}
+
+func (r *HeistRepository) QueryGetHeistSkillsByHeistId(ctx context.Context, id string) (domainmodels.HeistSkillsDto, error) {
+	row, err := r.dbExecutor.QueryContext(ctx, "SELECT * FROM heistSkills WHERE heistId='"+id+"';")
+	if err != nil {
+		return domainmodels.HeistSkillsDto{}, err
+	}
+
+	var skills domainmodels.HeistSkillsDto
+	idx := 0
+	for row.Next(){
+		var skillId string
+		var heistId string
+		var level string
+		var members int
+
+		err = row.Scan(&skillId, &heistId, &level, &members)
+		if err != nil {
+			return domainmodels.HeistSkillsDto{}, err
+		}
+
+		name , err := r.queryGetSkillNameById(ctx, skillId)
+		if err != nil {
+			return domainmodels.HeistSkillsDto{}, err
+		}
+
+		skills[idx].Name = name
+		skills[idx].Members = members
+		skills[idx].Level = level
+		idx ++
+	}
+	return skills, nil
+}

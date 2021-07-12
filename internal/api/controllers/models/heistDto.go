@@ -6,4 +6,5 @@ type HeistDto struct {
 	StartTime string `json:"startTime"`
 	EndTime string `json:"endTime"`
 	Skills HeistSkillsDto `json:"skills"`
+	Status string `json:"status"`
 }

@@ -30,3 +30,7 @@ func(h HeistResponse) 	AddHeistMembers(members []string, id string) (string,erro
 func (h HeistResponse) 	StartHeist(id string) (string,error) {
 	return h.StartHeist(id)
 }
+
+func (h HeistResponse) 	GetHeistById(ctx context.Context, id string) (domainmodels.HeistDto, bool, error){
+	return h.GetHeistById(ctx, id)
+}
