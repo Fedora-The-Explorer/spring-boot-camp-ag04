@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/sys/unix"
 	"time"
 
@@ -574,7 +575,7 @@ func (r *HeistRepository) GetMemberSkillsById(ctx context.Context, id string) (d
 
 func (r *HeistRepository) GetHeistById(ctx context.Context, id string) (domainmodels.HeistDto, bool, error) {
 	storageHeist , err := r.queryGetHeistById(ctx, id)
-	storageHeistSkills, err := r.QueryGetHeistSkillsByHeistId(ctx, id)
+	storageHeistSkills, err := r.queryGetHeistSkillsByHeistId(ctx, id)
 	if err != nil {
 		return domainmodels.HeistDto{}, false, err
 	}
@@ -623,7 +624,7 @@ func (r *HeistRepository) queryGetHeistById(ctx context.Context, id string) (sto
 	return heist, nil
 }
 
-func (r *HeistRepository) QueryGetHeistSkillsByHeistId(ctx context.Context, id string) (domainmodels.HeistSkillsDto, error) {
+func (r *HeistRepository) queryGetHeistSkillsByHeistId(ctx context.Context, id string) (domainmodels.HeistSkillsDto, error) {
 	row, err := r.dbExecutor.QueryContext(ctx, "SELECT * FROM heistSkills WHERE heistId='"+id+"';")
 	if err != nil {
 		return domainmodels.HeistSkillsDto{}, err
@@ -704,3 +705,10 @@ func (r *HeistRepository) queryGetMemberIdByHeistId(ctx context.Context, id stri
 	return ids, nil
 }
 
+func (r *HeistRepository) GetHeistSkillsByHeistId(ctx *gin.Context, id string) (domainmodels.HeistSkillsDto, error) {
+	skills, err := r.queryGetHeistSkillsByHeistId(ctx, id)
+	if err != nil {
+		return domainmodels.HeistSkillsDto{}, err
+	}
+	return skills, nil
+}

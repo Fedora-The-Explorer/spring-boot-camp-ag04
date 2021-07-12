@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	domainmodels "elProfessor/internal/api/controllers/models"
+	"github.com/gin-gonic/gin"
 )
 
 type HeistResponse struct {
@@ -37,4 +38,8 @@ func (h HeistResponse) 	GetHeistById(ctx context.Context, id string) (domainmode
 
 func (h HeistResponse) GetHeistMembersByHeistId(ctx context.Context, id string) (domainmodels.MemberDto, bool, error) {
 	return h.heistHandler.GetHeistMembersByHeistId(ctx, id)
+}
+
+func (h HeistResponse) GetHeistSkillsByHeistId(ctx *gin.Context, id string) (domainmodels.HeistSkillsDto, error) {
+	return h.heistHandler.GetHeistSkillsByHeistId(ctx, id)
 }

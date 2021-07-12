@@ -256,6 +256,18 @@ func (e *Controller) GetHeistMembers() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, members)
+	}
+}
 
+func(e *Controller) GetHeistSkills() gin.HandlerFunc{
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		skills, err := e.heistResponse.GetHeistSkillsByHeistId(ctx, id)
+		if err != nil {
+			ctx.String(http.StatusNotFound, "request could not be processed")
+			return
+		}
+
+		ctx.JSON(http.StatusOK, skills)
 	}
 }
