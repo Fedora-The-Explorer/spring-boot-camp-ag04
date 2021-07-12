@@ -43,3 +43,7 @@ func (h HeistResponse) GetHeistMembersByHeistId(ctx context.Context, id string) 
 func (h HeistResponse) GetHeistSkillsByHeistId(ctx *gin.Context, id string) (domainmodels.HeistSkillsDto, error) {
 	return h.heistHandler.GetHeistSkillsByHeistId(ctx, id)
 }
+
+func (h HeistResponse) 	GetHeistStatusByHeistId(ctx *gin.Context, id string) (string, error) {
+	return h.heistHandler.GetHeistStatusByHeistId(ctx, id)
+}

@@ -3,7 +3,6 @@ package sqlite
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/sys/unix"
 	"time"
 
 	domainmodels "elProfessor/internal/api/controllers/models"
@@ -711,4 +710,18 @@ func (r *HeistRepository) GetHeistSkillsByHeistId(ctx *gin.Context, id string) (
 		return domainmodels.HeistSkillsDto{}, err
 	}
 	return skills, nil
+}
+
+func (r *HeistRepository) GetHeistStatusByHeistId(ctx *gin.Context, id string) (string, error) {
+	row, err := r.dbExecutor.QueryContext(ctx, "SELECT status FROM heists WHERE id='"+id+"';")
+	if err != nil{
+		return "", err
+	}
+	var status string
+
+	err = row.Scan(&status)
+	if err != nil{
+		return "", err
+	}
+	return status, err
 }

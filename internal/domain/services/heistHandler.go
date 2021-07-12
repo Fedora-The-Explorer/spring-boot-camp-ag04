@@ -14,5 +14,5 @@ type HeistHandler interface {
 	GetHeistById(ctx context.Context, id string) (domainmodels.HeistDto, bool, error)
 	GetHeistMembersByHeistId(ctx context.Context, id string) (domainmodels.MemberDto, bool, error)
 	GetHeistSkillsByHeistId(ctx *gin.Context, id string) (domainmodels.HeistSkillsDto, error)
-
+	GetHeistStatusByHeistId(ctx *gin.Context, id string) (string, error)
 }
