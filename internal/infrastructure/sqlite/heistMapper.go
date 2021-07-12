@@ -10,4 +10,5 @@ type HeistMapper interface {
 	MapDomainSkillsToStorageSkills(memberSkillsUpdate domainmodels.MemberSkillsUpdateDto, id string) ([]storagemodels.MemberSkill, []storagemodels.Skill, string)
 	MapDomainHeistToStorageHeist(heistDto domainmodels.HeistDto) (storagemodels.Heist,[]storagemodels.Skill,[]storagemodels.HeistSkill)
 	MapDomainHeistSkillsToStorageHeistSkills(heistSkills domainmodels.HeistSkillsDto, id string) ([]storagemodels.HeistSkill, []storagemodels.Skill)
+	MapStorageSkillToDomainSkill(skill storagemodels.HeistSkill, name string) domainmodels.HeistSkillsDto
 }

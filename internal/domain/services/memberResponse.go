@@ -30,3 +30,12 @@ func (m MemberResponse) DeleteMemberSkill(memberId string, skillName string) err
 func (m MemberResponse) GetEligibleMembers(ctx context.Context, id string) (domainmodels.EligibleMemberDto, bool, error){
 	return m.GetEligibleMembers(ctx, id)
 }
+
+func (m MemberResponse) GetMemberById(ctx context.Context, id string) (domainmodels.MemberDto, bool, error){
+	return m.GetMemberById(ctx,id)
+}
+
+func (m MemberResponse) GetMemberSkillsById(ctx context.Context, id string) (domainmodels.MemberSkillsDto, bool, error){
+	return m.GetMemberSkillsById(ctx, id)
+}
+

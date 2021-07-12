@@ -10,24 +10,24 @@ import (
 
 // Controller implements handlers for web server requests.
 type Controller struct {
-	memberResponse MemberResponse
-	heistResponse HeistResponse
+	memberResponse  MemberResponse
+	heistResponse   HeistResponse
 	memberValidator MemberValidator
-	heistValidator HeistValidator
+	heistValidator  HeistValidator
 }
 
 // NewController creates a new instance of Controller
-func NewController(memberResponse MemberResponse, heistResponse HeistResponse ,memberValidator MemberValidator, heistValidator HeistValidator) *Controller {
+func NewController(memberResponse MemberResponse, heistResponse HeistResponse, memberValidator MemberValidator, heistValidator HeistValidator) *Controller {
 	return &Controller{
-		memberResponse: memberResponse,
-		heistResponse: heistResponse,
+		memberResponse:  memberResponse,
+		heistResponse:   heistResponse,
 		memberValidator: memberValidator,
-		heistValidator: heistValidator,
+		heistValidator:  heistValidator,
 	}
 }
 
 // PostMember handles the insert member request and the validation
-func (e *Controller) PostMember() gin.HandlerFunc{
+func (e *Controller) PostMember() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var memberDto models.MemberDto
 		err := ctx.ShouldBindWith(&memberDto, binding.JSON)
@@ -50,7 +50,7 @@ func (e *Controller) PostMember() gin.HandlerFunc{
 	}
 }
 
-func (e *Controller) UpdateSkills() gin.HandlerFunc{
+func (e *Controller) UpdateSkills() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		memberId := ctx.Param("id")
 		var memberSkillsUpdateDto models.MemberSkillsUpdateDto
@@ -74,12 +74,12 @@ func (e *Controller) UpdateSkills() gin.HandlerFunc{
 	}
 }
 
-func(e *Controller) DeleteSkill() gin.HandlerFunc{
-	return func(ctx *gin.Context){
+func (e *Controller) DeleteSkill() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
 		memberId := ctx.Param("id")
 		skillName := ctx.Param("name")
 
-		err:= e.memberResponse.DeleteMemberSkill(memberId, skillName)
+		err := e.memberResponse.DeleteMemberSkill(memberId, skillName)
 		if err != nil {
 			ctx.String(http.StatusNotFound, "request could not be processed.")
 			return
@@ -88,8 +88,8 @@ func(e *Controller) DeleteSkill() gin.HandlerFunc{
 	}
 }
 
-func(e *Controller) HeistAdd() gin.HandlerFunc {
-	return func(ctx *gin.Context){
+func (e *Controller) HeistAdd() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
 		var heistDto models.HeistDto
 		err := ctx.ShouldBindWith(&heistDto, binding.JSON)
 		if err != nil {
@@ -106,8 +106,8 @@ func(e *Controller) HeistAdd() gin.HandlerFunc {
 	}
 }
 
-func(e *Controller) UpdateHeistSkills() gin.HandlerFunc {
-	return func(ctx *gin.Context){
+func (e *Controller) UpdateHeistSkills() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
 		heistId := ctx.Param("id")
 		var heistSkills models.HeistSkillsDto
 		err := ctx.ShouldBindWith(&heistSkills, binding.JSON)
@@ -130,8 +130,8 @@ func(e *Controller) UpdateHeistSkills() gin.HandlerFunc {
 	}
 }
 
-func (e *Controller) EligibleMembers() gin.HandlerFunc{
-	return func(ctx *gin.Context){
+func (e *Controller) EligibleMembers() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
 		id := ctx.Param("id")
 		members, exists, err := e.memberResponse.GetEligibleMembers(ctx, id)
 		if err != nil {
@@ -147,8 +147,8 @@ func (e *Controller) EligibleMembers() gin.HandlerFunc{
 	}
 }
 
-func (e *Controller) AddMembersToHeist() gin.HandlerFunc{
-	return func(ctx *gin.Context){
+func (e *Controller) AddMembersToHeist() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
 		id := ctx.Param("id")
 		var members []string
 		err := ctx.ShouldBindWith(&members, binding.JSON)
@@ -159,7 +159,7 @@ func (e *Controller) AddMembersToHeist() gin.HandlerFunc{
 
 		code, err := e.heistResponse.AddHeistMembers(members, id)
 		if err != nil {
-			if code == "404"{
+			if code == "404" {
 				ctx.String(http.StatusNotFound, "heist not found")
 				return
 			} else {
@@ -172,12 +172,12 @@ func (e *Controller) AddMembersToHeist() gin.HandlerFunc{
 	}
 }
 
-func (e *Controller) StartHeist() gin.HandlerFunc{
+func (e *Controller) StartHeist() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.Param("id")
 		code, err := e.heistResponse.StartHeist(id)
 		if err != nil {
-			if code == "404"{
+			if code == "404" {
 				ctx.String(http.StatusNotFound, "heist not found")
 				return
 			} else {
@@ -189,3 +189,99 @@ func (e *Controller) StartHeist() gin.HandlerFunc{
 
 	}
 }
+
+func (e *Controller) GetMember() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		member, exists, err := e.memberResponse.GetMemberById(ctx, id)
+
+		if err != nil {
+			ctx.String(http.StatusBadRequest, "request could not be processed")
+			return
+		}
+		if !exists {
+			ctx.String(http.StatusNotFound, "failed to get member with given id")
+			return
+		}
+
+		ctx.JSON(http.StatusOK, member)
+	}
+}
+
+func (e *Controller) GetMemberSkills() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		skills, exists, err := e.memberResponse.GetMemberSkillsById(ctx, id)
+		if err != nil {
+			ctx.String(http.StatusBadRequest, "request could not be processed")
+			return
+		}
+		if !exists {
+			ctx.String(http.StatusNotFound, "failed to get member skills with given member id")
+			return
+		}
+
+		ctx.JSON(http.StatusOK, skills)
+	}
+}
+
+func (e *Controller) GetHeist() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		heist, exists, err := e.heistResponse.GetHeistById(ctx, id)
+		if err != nil {
+			ctx.String(http.StatusBadRequest, "request could not be processed")
+			return
+		}
+		if !exists {
+			ctx.String(http.StatusNotFound, "failed to get heist for a given heist id")
+			return
+		}
+
+		ctx.JSON(http.StatusOK, heist)
+	}
+}
+
+func (e *Controller) GetHeistMembers() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		members, exists, err := e.heistResponse.GetHeistMembersByHeistId(ctx, id)
+		if err != nil {
+			ctx.String(http.StatusMethodNotAllowed, "request could not be processed")
+			return
+		}
+		if !exists {
+			ctx.String(http.StatusNotFound, "failed to get member skills with given member id")
+			return
+		}
+
+		ctx.JSON(http.StatusOK, members)
+	}
+}
+
+func(e *Controller) GetHeistSkills() gin.HandlerFunc{
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		skills, err := e.heistResponse.GetHeistSkillsByHeistId(ctx, id)
+		if err != nil {
+			ctx.String(http.StatusNotFound, "request could not be processed")
+			return
+		}
+
+		ctx.JSON(http.StatusOK, skills)
+	}
+}
+
+func(e *Controller) GetHeistStatus() gin.HandlerFunc{
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		status, err := e.heistResponse.GetHeistStatusByHeistId(ctx, id)
+		if err != nil {
+			ctx.String(http.StatusNotFound, "request could not be processed")
+			return
+		}
+
+		ctx.JSON(http.StatusOK, status)
+	}
+}
+
