@@ -156,16 +156,16 @@ func(r *HeistRepository) DeleteMemberSkill(memberId, skillName string) error{
 }
 
 // InsertHeist inserts a storage model of heists, their skills and unique skills into the database
-func(r *HeistRepository) InsertHeist(heistDto domainmodels.HeistDto) error {
+func(r *HeistRepository) InsertHeist(heistDto domainmodels.HeistDto) (string, error) {
 	storageHeist, storageSkills, storageHeistSkills := r.heistMapper.MapDomainHeistToStorageHeist(heistDto)
 	storageHeistSkills = r.CheckAndInsertHeistSkills(storageSkills,storageHeistSkills)
 
 	unique, err := r.CheckUniqueName(storageHeist)
 	if err != nil {
-		return err
+		return "", err
 	}
 	if !unique {
-		return err
+		return "", err
 	}
 	// if getting errors from the query check the go sdk sql drivers
 	defaultStatus := "PLANNING"
@@ -180,7 +180,7 @@ func(r *HeistRepository) InsertHeist(heistDto domainmodels.HeistDto) error {
 		r.dbExecutor.Exec("INSERT INTO heistSkills VALUES ('" + skill.SkillId + "', '"+ skill.HeistId + "', '"+ skill.Level + "','"+ skill.Members + "');")
 
 	}
-	return nil
+	return storageHeist.Id, err
 }
 
 // CheckAndInsertHeistSkills checks if the skill is unique, if yes it inserts it into the db, if not it does not and it passes the id of the existing skill to the heistSkill
@@ -455,6 +455,16 @@ func(r *HeistRepository) StartHeist(id string) (string, error){
 	return "", nil
 }
 
+func(r *HeistRepository) EndHeist(id string) (string, error){
+	code, err := r.checkHeist(id, "IN_PROGRESS")
+	if err != nil {
+		return code, err
+	}
+	finished := "FINISHED"
+	r.dbExecutor.Exec("UPDATE heists SET status='" + finished + "'WHERE id='" + id + "';")
+	return "", nil
+}
+
 func (r *HeistRepository) checkPossibleHeistMember(member storagemodels.Member) error {
 	row, err := r.dbExecutor.QueryContext(context.Background(), "SELECT memberId FROM heistMembers;")
 	for row.Next(){
@@ -724,4 +734,12 @@ func (r *HeistRepository) GetHeistStatusByHeistId(ctx *gin.Context, id string) (
 		return "", err
 	}
 	return status, err
+}
+
+func (r *HeistRepository) UpdateHeistStatus(ctx *gin.Context, id, status string) error {
+	_, err :=r.dbExecutor.Exec("UPDATE heists SET status='" + status + "'WHERE id='" + id + "';")
+	if err != nil {
+		return err
+	}
+	return nil
 }
