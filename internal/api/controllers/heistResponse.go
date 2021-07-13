@@ -17,4 +17,5 @@ type HeistResponse interface {
 	GetHeistSkillsByHeistId(ctx *gin.Context, id string) (models.HeistSkillsDto, error)
 	GetHeistStatusByHeistId(ctx *gin.Context, id string) (string, error)
 	EndHeist(id string) (string, error)
+	GetHeistOutcomeByHeistId(ctx *gin.Context, id string) (string, bool, error)
 }
