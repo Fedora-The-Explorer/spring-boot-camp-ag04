@@ -319,3 +319,21 @@ func(e *Controller) GetHeistStatus() gin.HandlerFunc{
 	}
 }
 
+
+func(e *Controller) GetHeistOutcome() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		status, exists, err := e.heistResponse.GetHeistOutcomeByHeistId(ctx, id)
+		if err != nil {
+			ctx.String(http.StatusMethodNotAllowed, "request could not be processed")
+			return
+		}
+		if !exists {
+			ctx.String(http.StatusNotFound, "heist not found")
+			return
+		}
+
+		ctx.JSON(http.StatusOK, status)
+	}
+}
+

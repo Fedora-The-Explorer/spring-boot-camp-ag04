@@ -24,6 +24,9 @@ const getHeist = "/heist/:id"
 const getHeistMembers = "/heist/:id/members"
 const getHeistSkills = "/heist/:id/skills"
 const getHeistStatus = "/heist/:id/status"
+const getHeistOutcome = "/heist/:id/outcome"
+
+
 
 // WebServer Api server
 type WebServer struct {
@@ -96,6 +99,8 @@ func (w *WebServer) registerRoutes(ctrl Controller) {
 	w.router.GET(getHeistMembers, ctrl.GetHeistMembers())
 	w.router.GET(getHeistSkills, ctrl.GetHeistSkills())
 	w.router.GET(getHeistStatus, ctrl.GetHeistStatus())
+	w.router.GET(getHeistOutcome, ctrl.GetHeistOutcome())
+
 }
 
 // Controller handles api calls
@@ -114,4 +119,5 @@ type Controller interface {
 	GetHeistMembers() gin.HandlerFunc
 	GetHeistSkills() gin.HandlerFunc
 	GetHeistStatus() gin.HandlerFunc
+	GetHeistOutcome() gin.HandlerFunc
 }

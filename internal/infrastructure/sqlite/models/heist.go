@@ -9,4 +9,5 @@ type Heist struct {
 	StartTime time.Time
 	EndTime time.Time
 	Status string
+	Outcome string
 }

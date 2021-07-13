@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"math/rand"
 	"time"
 
 	domainmodels "elProfessor/internal/api/controllers/models"
@@ -458,10 +459,67 @@ func(r *HeistRepository) StartHeist(id string) (string, error){
 func(r *HeistRepository) EndHeist(id string) (string, error){
 	code, err := r.checkHeist(id, "IN_PROGRESS")
 	if err != nil {
-		return code, err
+		return code, nil
 	}
 	finished := "FINISHED"
 	r.dbExecutor.Exec("UPDATE heists SET status='" + finished + "'WHERE id='" + id + "';")
+
+
+	members, err := r.queryGetMemberIdByHeistId(context.Background(), id)
+	if err != nil {
+		return "", err
+	}
+	row, err := r.dbExecutor.QueryContext(context.Background(), "SELECT members FROM heists WHERE id='"+id+"';")
+	if err != nil {
+		return "", err
+	}
+	var membersRequired int
+	err = row.Scan(&membersRequired)
+	membersUsed := len(members)
+	percentage := float64(membersUsed/membersRequired) * 100
+	var amountOfMembersToUpdate int
+	var outcome string
+	var factor float64
+	incarcerateOnly := false
+	if percentage < 50{
+		outcome = "FAILED"
+		amountOfMembersToUpdate = membersUsed
+	} else if percentage < 75 {
+		if rand.Int() %2 == 0{
+			outcome = "FAILED"
+		} else {
+			outcome = "SUCCEEDED"
+		}
+		if outcome == "SUCCEEDED" {
+			factor = 0.33
+			amountOfMembersToUpdate = int(float64(membersUsed) * factor)
+		} else {
+			factor = 0.66
+			amountOfMembersToUpdate = int(float64(membersUsed) * factor)
+		}
+	} else if percentage < 100 {
+		outcome = "SUCCEEDED"
+		factor = 0.33
+		amountOfMembersToUpdate = int(float64(membersUsed) * factor)
+		incarcerateOnly = true
+	} else {
+		outcome = "SUCCEEDED"
+	}
+	incarcerate := "INCARCERATED"
+	expire := "EXPIRED"
+	for i := 0; i < amountOfMembersToUpdate; i++ {
+		if incarcerateOnly{
+			r.dbExecutor.Exec("UPDATE members SET status='" + incarcerate + "'WHERE id='" + members[i] + "';")
+		} else {
+			if rand.Int()%2 == 0 {
+				r.dbExecutor.Exec("UPDATE members SET status='" + incarcerate + "'WHERE id='" + members[i] + "';")
+			} else {
+				r.dbExecutor.Exec("UPDATE members SET status='" + expire + "'WHERE id='" + members[i] + "';")
+			}
+		}
+	}
+
+	r.dbExecutor.Exec("UPDATE heists SET outcome='" + outcome + "'WHERE id='" + id + "';")
 	return "", nil
 }
 
@@ -592,8 +650,8 @@ func (r *HeistRepository) GetHeistById(ctx context.Context, id string) (domainmo
 	domainHeist := domainmodels.HeistDto{
 		Name: storageHeist.Name,
 		Location: storageHeist.Location,
-		StartTime: storageHeist.StartTime.String(),
-		EndTime: storageHeist.EndTime.String(),
+		StartTime: storageHeist.StartTime,
+		EndTime: storageHeist.EndTime,
 		Skills: storageHeistSkills,
 		Status: storageHeist.Status,
 	}
@@ -742,4 +800,18 @@ func (r *HeistRepository) UpdateHeistStatus(ctx *gin.Context, id, status string)
 		return err
 	}
 	return nil
+}
+
+func (r *HeistRepository) GetHeistOutcomeByHeistId(ctx *gin.Context, id string) (string, bool, error) {
+	row, err := r.dbExecutor.QueryContext(ctx, "SELECT status FROM heists WHERE id='"+id+"';")
+	if err != nil{
+		return "", false, nil
+	}
+	var outcome string
+
+	err = row.Scan(&outcome)
+	if err != nil{
+		return "", true, err
+	}
+	return outcome, true, err
 }

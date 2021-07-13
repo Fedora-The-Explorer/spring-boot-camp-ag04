@@ -52,3 +52,8 @@ func (h HeistResponse) 	EndHeist(id string) (string, error){
 	return h.heistHandler.EndHeist(id)
 }
 
+func (h HeistResponse) 	GetHeistOutcomeByHeistId(ctx *gin.Context, id string) (string, bool, error){
+	return h.heistHandler.GetHeistOutcomeByHeistId(ctx, id)
+}
+
+
