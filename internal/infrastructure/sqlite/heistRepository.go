@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"database/sql"
 	"github.com/gin-gonic/gin"
 	"math/rand"
 	"time"
@@ -392,7 +393,7 @@ func (r *HeistRepository) queryGetSkillNameById(ctx context.Context, id string) 
 	return name, nil
 }
 
-func (r *HeistRepository) AddHeistMembers(members []string, id string) (string, error){
+func (r *HeistRepository) AddHeistMembers(members []string, id string) (string, error, []string){
 	var memberIds []string
 	code, err := r.checkHeist(id, "PLANNING")
 	if err != nil {
@@ -409,7 +410,32 @@ func (r *HeistRepository) AddHeistMembers(members []string, id string) (string, 
 	ready := "READY"
 	r.dbExecutor.Exec("UPDATE heists SET status='" + ready + "'WHERE id='" + id + "';")
 
-	return code, nil
+	emails := r.queryGetMailsFromMemberIds(memberIds)
+
+	return code, nil, emails
+}
+
+
+func (r *HeistRepository) queryGetMailsFromMemberIds(ids []string) []string{
+	var row *sql.Rows
+	var err error
+	for _, id := range ids {
+		row, err = r.dbExecutor.QueryContext(context.Background(), "SELECT email FROM members WHERE id='"+id+"';")
+		if err != nil {
+			panic(err)
+		}
+	}
+	var emails []string
+	for row.Next(){
+		var email string
+		err = row.Scan(&email)
+		if err != nil {
+			panic(err)
+		}
+		emails = append(emails, email)
+	}
+
+	return emails
 }
 
 func (r *HeistRepository) queryGetMemberIdByName(member string) string {
@@ -815,3 +841,4 @@ func (r *HeistRepository) GetHeistOutcomeByHeistId(ctx *gin.Context, id string) 
 	}
 	return outcome, true, err
 }
+
