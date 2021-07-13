@@ -7,7 +7,7 @@ import (
 )
 
 type HeistHandler interface {
-	InsertHeist(heistDto domainmodels.HeistDto) error
+	InsertHeist(heistDto domainmodels.HeistDto) (string, error)
 	UpdateHeistSkills(ctx context.Context, heistSkills domainmodels.HeistSkillsDto, heistId string) error
 	AddHeistMembers(members []string, id string) (string,error)
 	StartHeist(id string) (string,error)
@@ -15,4 +15,6 @@ type HeistHandler interface {
 	GetHeistMembersByHeistId(ctx context.Context, id string) (domainmodels.MemberDto, bool, error)
 	GetHeistSkillsByHeistId(ctx *gin.Context, id string) (domainmodels.HeistSkillsDto, error)
 	GetHeistStatusByHeistId(ctx *gin.Context, id string) (string, error)
+	EndHeist(id string) (string, error)
+
 }

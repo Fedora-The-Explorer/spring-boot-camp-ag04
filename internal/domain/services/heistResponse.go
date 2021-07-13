@@ -16,7 +16,7 @@ func NewHeistResponse(heistHandler HeistHandler) *HeistResponse{
 	}
 }
 
-func (h HeistResponse) InsertHeist(heistDto domainmodels.HeistDto) error {
+func (h HeistResponse) InsertHeist(heistDto domainmodels.HeistDto) (string, error) {
 	return h.heistHandler.InsertHeist(heistDto)
 }
 
@@ -47,3 +47,8 @@ func (h HeistResponse) GetHeistSkillsByHeistId(ctx *gin.Context, id string) (dom
 func (h HeistResponse) 	GetHeistStatusByHeistId(ctx *gin.Context, id string) (string, error) {
 	return h.heistHandler.GetHeistStatusByHeistId(ctx, id)
 }
+
+func (h HeistResponse) 	EndHeist(id string) (string, error){
+	return h.heistHandler.EndHeist(id)
+}
+

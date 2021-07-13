@@ -1,13 +1,10 @@
 package mappers
 
 import (
-	"fmt"
-	"github.com/nu7hatch/gouuid"
-	"log"
-	"time"
-
 	domainmodels "elProfessor/internal/api/controllers/models"
 	storagemodels "elProfessor/internal/infrastructure/sqlite/models"
+	"github.com/nu7hatch/gouuid"
+	"log"
 )
 
 type HeistMapper struct{
@@ -94,23 +91,13 @@ func(m *HeistMapper) MapDomainHeistToStorageHeist(heistDto domainmodels.HeistDto
 		log.Fatalf("%s: %s", "failed to create uuid", err)
 	}
 
-
-	layout := "2006-01-02T15:04:05.000Z"
-	startTime, err := time.Parse(layout, heistDto.StartTime)
-	if err != nil {
-		fmt.Println(err)
-	}
-	endTime, err := time.Parse(layout, heistDto.EndTime)
-	if err != nil {
-		fmt.Println(err)
-	}
 	
 	heist := storagemodels.Heist{
 		Id:        heistId.String(),
 		Name:      heistDto.Name,
 		Location:  heistDto.Location,
-		StartTime: startTime,
-		EndTime:   endTime,
+		StartTime: heistDto.StartTime,
+		EndTime:   heistDto.EndTime,
 	}
 
 	var skills []storagemodels.Skill

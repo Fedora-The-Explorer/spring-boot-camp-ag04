@@ -8,7 +8,7 @@ import (
 
 // MemberResponse implements member related functions
 type HeistResponse interface {
-	InsertHeist(heistDto models.HeistDto) error
+	InsertHeist(heistDto models.HeistDto) (string, error)
 	UpdateHeistSkills(ctx context.Context, heistSkills models.HeistSkillsDto, heistId string) error
 	AddHeistMembers(members []string, id string) (string,error)
 	StartHeist(id string) (string,error)
@@ -16,4 +16,5 @@ type HeistResponse interface {
 	GetHeistMembersByHeistId(ctx *gin.Context, id string) (models.MemberDto, bool, error)
 	GetHeistSkillsByHeistId(ctx *gin.Context, id string) (models.HeistSkillsDto, error)
 	GetHeistStatusByHeistId(ctx *gin.Context, id string) (string, error)
+	EndHeist(id string) (string, error)
 }

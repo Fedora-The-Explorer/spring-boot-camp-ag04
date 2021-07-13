@@ -1,11 +1,12 @@
 package controllers
 
 import (
+	"elProfessor/internal/api/controllers/models"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"github.com/jasonlvhit/gocron"
 	"net/http"
-
-	"elProfessor/internal/api/controllers/models"
+	"time"
 )
 
 // Controller implements handlers for web server requests.
@@ -97,14 +98,47 @@ func (e *Controller) HeistAdd() gin.HandlerFunc {
 			return
 		}
 
-		err = e.heistResponse.InsertHeist(heistDto)
+
+		id, err := e.heistResponse.InsertHeist(heistDto)
 		if err != nil {
 			ctx.String(http.StatusBadRequest, "request could not be processed.")
 			return
 		}
+
+		//We will be using go cron package for automation of starting and ending heists at specific times
+		startCh := make(chan bool)
+		startTime := heistDto.StartTime
+		endTime := heistDto.EndTime
+		e.AutomaticStart(id, startCh, startTime)
+		endCh := make(chan bool)
+		e.AutomaticEnd(id, endCh, endTime)
+
 		ctx.Status(http.StatusCreated)
 	}
 }
+
+
+func (e *Controller) AutomaticStart(id string, quit <-chan bool, time time.Time) {
+	g := gocron.NewScheduler()
+	err := g.Every(1).Hour().From(&time).Do(e.heistResponse.StartHeist(id))
+	if err != nil {
+		return
+	}
+	<-quit
+	return
+}
+
+func (e *Controller) AutomaticEnd(id string, quit <-chan bool, time time.Time) {
+	g := gocron.NewScheduler()
+	err := g.Every(1).Hour().From(&time).Do(e.heistResponse.EndHeist(id))
+	if err != nil {
+		return
+	}
+	<-quit
+	return
+}
+
+
 
 func (e *Controller) UpdateHeistSkills() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
