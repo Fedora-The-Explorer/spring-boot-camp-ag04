@@ -8,7 +8,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func main (){
+// main db initialization
+func main() {
 	// Note: due to the usage of relative paths, this script has to be run from this directory (go run main.go).
 	// Running from Goland directly may cause incorrect behaviour.
 
@@ -30,7 +31,8 @@ func main (){
 	createHeistSkillsTable(heistDatabase)
 }
 
-func createMembersTable (db *sql.DB) {
+// createMembersTable creates the members table inside the heists db
+func createMembersTable(db *sql.DB) {
 	createMembersTableSQL := `CREATE TABLE members (
 		"id" TEXT NOT NULL PRIMARY KEY,
 		"name" TEXT NOT NULL,
@@ -49,7 +51,8 @@ func createMembersTable (db *sql.DB) {
 	log.Println("Members table created")
 }
 
-func createMemberSkillsTable (db *sql.DB) {
+// createMemberSkillsTable creates the member skills table inside the heists db
+func createMemberSkillsTable(db *sql.DB) {
 	createMemberSkillsTableSQL := `CREATE TABLE memberSkills (
     	"memberId" TEXT NOT NULL FOREIGN KEY,
 		"skillId" TEXT NOT NULL FOREIGN KEY,
@@ -66,7 +69,8 @@ func createMemberSkillsTable (db *sql.DB) {
 	log.Println("Members skills table created")
 }
 
-func createSkillsTable (db *sql.DB) {
+// createSkillsTable creates the skills table inside the heists db
+func createSkillsTable(db *sql.DB) {
 	createSkillsTableSQL := `CREATE TABLE skills (
 		"id" TEXT NOT NULL PRIMARY KEY,
 		"name" TEXT NOT NULL
@@ -81,7 +85,8 @@ func createSkillsTable (db *sql.DB) {
 	log.Println("Skills table created")
 }
 
-func createHeistMembersTable (db *sql.DB) {
+// createHeistMembersTable creates the heist members table inside the heists db
+func createHeistMembersTable(db *sql.DB) {
 	createHeistMembersTableSQL := `CREATE TABLE heistMembers (
 		"memberId" TEXT NOT NULL FOREIGN KEY,
 		"heistId" TEXT NOT NULL FOREIGN KEY
@@ -96,7 +101,8 @@ func createHeistMembersTable (db *sql.DB) {
 	log.Println("Heist members table created")
 }
 
-func createHeistsTable (db *sql.DB) {
+// createHeistsTable creates the heists table inside the heists db
+func createHeistsTable(db *sql.DB) {
 	createHeistsTableSQL := `CREATE TABLE heists (
 		"id" TEXT NOT NULL PRIMARY KEY,
 		"name" TEXT NOT NULL,
@@ -116,7 +122,8 @@ func createHeistsTable (db *sql.DB) {
 	log.Println("Heists table created")
 }
 
-func createHeistSkillsTable (db *sql.DB) {
+// createHeistSkillsTable creates the heist skills table inside the heists db
+func createHeistSkillsTable(db *sql.DB) {
 	createHeistSkillsTableSQL := `CREATE TABLE heistSkills (
     	"heistId" TEXT NOT NULL FOREIGN KEY,
 		"skillId" TEXT NOT NULL FOREIGN KEY,
@@ -132,4 +139,3 @@ func createHeistSkillsTable (db *sql.DB) {
 	statement.Exec()
 	log.Println("Heist skills table created")
 }
-

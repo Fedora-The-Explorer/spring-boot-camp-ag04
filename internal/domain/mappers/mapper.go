@@ -7,26 +7,28 @@ import (
 	"log"
 )
 
-type HeistMapper struct{
+// HeistMapper maps domain data to storage data and vice versa.
+type HeistMapper struct {
 }
 
-
-func NewHeistMapper() *HeistMapper{
+// NewHeistMapper creates and returns a new HeistMapper.
+func NewHeistMapper() *HeistMapper {
 	return &HeistMapper{}
 }
 
-func(m *HeistMapper) MapDomainMemberToStorageMember(domainMember domainmodels.MemberDto) (storagemodels.Member, []storagemodels.Skill, []storagemodels.MemberSkill){
+// MapDomainMemberToStorageMember maps a dto member model to storage member model.
+func (m *HeistMapper) MapDomainMemberToStorageMember(domainMember domainmodels.MemberDto) (storagemodels.Member, []storagemodels.Skill, []storagemodels.MemberSkill) {
 	memberId, err := uuid.NewV4()
 	if err != nil {
 		log.Fatalf("%s: %s", "failed to create uuid", err)
 	}
 	member := storagemodels.Member{
-		Id: memberId.String(),
-		Name: domainMember.Name,
-		Sex:domainMember.Sex,
-		Email:domainMember.Email,
-		MainSkillId:domainMember.MainSkill,
-		Status:domainMember.Status,
+		Id:          memberId.String(),
+		Name:        domainMember.Name,
+		Sex:         domainMember.Sex,
+		Email:       domainMember.Email,
+		MainSkillId: domainMember.MainSkill,
+		Status:      domainMember.Status,
 	}
 
 	var skills []storagemodels.Skill
@@ -38,16 +40,15 @@ func(m *HeistMapper) MapDomainMemberToStorageMember(domainMember domainmodels.Me
 			log.Fatalf("%s: %s", "failed to create uuid", err)
 		}
 		currentSkill := storagemodels.Skill{
-			Id: skillId.String(),
+			Id:   skillId.String(),
 			Name: skill.Name,
 		}
 
-
 		currentMemberSkill := storagemodels.MemberSkill{
 			MemberId: memberId.String(),
-			SkillId: skillId.String(),
-			Name: skill.Name,
-			Level: skill.Level,
+			SkillId:  skillId.String(),
+			Name:     skill.Name,
+			Level:    skill.Level,
 		}
 
 		skills = append(skills, currentSkill)
@@ -57,7 +58,8 @@ func(m *HeistMapper) MapDomainMemberToStorageMember(domainMember domainmodels.Me
 	return member, skills, memberSkills
 }
 
-func(m *HeistMapper) MapDomainSkillsToStorageSkills(memberSkillsUpdateDto domainmodels.MemberSkillsUpdateDto, id string) ([]storagemodels.MemberSkill, []storagemodels.Skill, string) {
+// MapDomainSkillsToStorageSkills maps dto skills model to storage skills model.
+func (m *HeistMapper) MapDomainSkillsToStorageSkills(memberSkillsUpdateDto domainmodels.MemberSkillsUpdateDto, id string) ([]storagemodels.MemberSkill, []storagemodels.Skill, string) {
 	var skills []storagemodels.Skill
 	var memberSkills []storagemodels.MemberSkill
 	for _, skill := range memberSkillsUpdateDto.Skills {
@@ -66,15 +68,15 @@ func(m *HeistMapper) MapDomainSkillsToStorageSkills(memberSkillsUpdateDto domain
 			log.Fatalf("%s: %s", "failed to create uuid", err)
 		}
 		currentSkill := storagemodels.Skill{
-			Id: skillId.String(),
+			Id:   skillId.String(),
 			Name: skill.Name,
 		}
 
 		currentMemberSkill := storagemodels.MemberSkill{
 			MemberId: id,
-			SkillId: skillId.String(),
-			Name: skill.Name,
-			Level: skill.Level,
+			SkillId:  skillId.String(),
+			Name:     skill.Name,
+			Level:    skill.Level,
 		}
 
 		skills = append(skills, currentSkill)
@@ -86,13 +88,13 @@ func(m *HeistMapper) MapDomainSkillsToStorageSkills(memberSkillsUpdateDto domain
 	return memberSkills, skills, mainSkill
 }
 
-func(m *HeistMapper) MapDomainHeistToStorageHeist(heistDto domainmodels.HeistDto) (storagemodels.Heist,[]storagemodels.Skill,[]storagemodels.HeistSkill){
+// MapDomainHeistToStorageHeist maps dto heist model to storage heist model.
+func (m *HeistMapper) MapDomainHeistToStorageHeist(heistDto domainmodels.HeistDto) (storagemodels.Heist, []storagemodels.Skill, []storagemodels.HeistSkill) {
 	heistId, err := uuid.NewV4()
 	if err != nil {
 		log.Fatalf("%s: %s", "failed to create uuid", err)
 	}
 
-	
 	heist := storagemodels.Heist{
 		Id:        heistId.String(),
 		Name:      heistDto.Name,
@@ -110,15 +112,14 @@ func(m *HeistMapper) MapDomainHeistToStorageHeist(heistDto domainmodels.HeistDto
 			log.Fatalf("%s: %s", "failed to create uuid", err)
 		}
 		currentSkill := storagemodels.Skill{
-			Id: skillId.String(),
+			Id:   skillId.String(),
 			Name: skill.Name,
 		}
-
 
 		currentMemberSkill := storagemodels.HeistSkill{
 			SkillId: skillId.String(),
 			HeistId: heistId.String(),
-			Level: skill.Level,
+			Level:   skill.Level,
 			Members: skill.Members,
 		}
 
@@ -128,10 +129,11 @@ func(m *HeistMapper) MapDomainHeistToStorageHeist(heistDto domainmodels.HeistDto
 	}
 
 	return heist, skills, heistSkills
-	
+
 }
 
-func(m *HeistMapper) MapDomainHeistSkillsToStorageHeistSkills(heistSkills domainmodels.HeistSkillsDto, id string) ([]storagemodels.HeistSkill, []storagemodels.Skill) {
+// MapDomainHeistSkillsToStorageHeistSkills maps dto heist skills model to storage heist skills model.
+func (m *HeistMapper) MapDomainHeistSkillsToStorageHeistSkills(heistSkills domainmodels.HeistSkillsDto, id string) ([]storagemodels.HeistSkill, []storagemodels.Skill) {
 	var skills []storagemodels.Skill
 	var memberSkills []storagemodels.HeistSkill
 	for _, skill := range heistSkills {
@@ -140,14 +142,14 @@ func(m *HeistMapper) MapDomainHeistSkillsToStorageHeistSkills(heistSkills domain
 			log.Fatalf("%s: %s", "failed to create uuid", err)
 		}
 		currentSkill := storagemodels.Skill{
-			Id: skillId.String(),
+			Id:   skillId.String(),
 			Name: skill.Name,
 		}
 
 		currentMemberSkill := storagemodels.HeistSkill{
 			SkillId: skillId.String(),
 			HeistId: id,
-			Level: skill.Level,
+			Level:   skill.Level,
 			Members: skill.Members,
 		}
 

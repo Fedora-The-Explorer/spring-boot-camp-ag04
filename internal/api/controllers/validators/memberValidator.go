@@ -5,19 +5,21 @@ import "elProfessor/internal/api/controllers/models"
 // MemberValidator validates insert member requests
 type MemberValidator struct {
 }
+
 // NewMemberValidator creates a new instance of MemberValidator
-func NewMemberValidator () *MemberValidator{
+func NewMemberValidator() *MemberValidator {
 	return &MemberValidator{
 
 	}
 }
-// Member is valid checks if event update is valid
+
+// MemberIsValid checks if event update is valid
 // Sex is F or M
-// Status is one of the following values: AVAILIABLE, EXPIRED, INCARCERATED, RETIRED
+// Status is one of the following values: AVAILABLE, EXPIRED, INCARCERATED, RETIRED
 func (v *MemberValidator) MemberIsValid(memberDto models.MemberDto) bool {
-	if memberDto.Sex != "F" && memberDto.Sex != "M"{
+	if memberDto.Sex != "F" && memberDto.Sex != "M" {
 		return false
-	} else if memberDto.Status != "AVAILIABLE" && memberDto.Status != "EXPIRED" && memberDto.Status != "INCARCERATED" && memberDto.Status != "RETIRED" {
+	} else if memberDto.Status != "AVAILABLE" && memberDto.Status != "EXPIRED" && memberDto.Status != "INCARCERATED" && memberDto.Status != "RETIRED" {
 		return false
 	} else {
 		return true

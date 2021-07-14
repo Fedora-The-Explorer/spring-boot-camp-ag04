@@ -16,22 +16,21 @@ type Controller struct {
 	heistResponse   HeistResponse
 	memberValidator MemberValidator
 	heistValidator  HeistValidator
-	smtpService SmtpService
+	smtpService     SmtpService
 }
 
-
 // NewController creates a new instance of Controller
-func NewController(memberResponse MemberResponse, heistResponse HeistResponse, memberValidator MemberValidator, heistValidator HeistValidator, 	smtpService SmtpService) *Controller {
+func NewController(memberResponse MemberResponse, heistResponse HeistResponse, memberValidator MemberValidator, heistValidator HeistValidator, smtpService SmtpService) *Controller {
 	return &Controller{
 		memberResponse:  memberResponse,
 		heistResponse:   heistResponse,
 		memberValidator: memberValidator,
 		heistValidator:  heistValidator,
-		smtpService: smtpService,
+		smtpService:     smtpService,
 	}
 }
 
-// PostMember handles the insert member request and the validation
+// PostMember handles the insert member request and the validation, sends mail to newly added members
 func (e *Controller) PostMember() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var memberDto models.MemberDto
@@ -60,6 +59,7 @@ func (e *Controller) PostMember() gin.HandlerFunc {
 	}
 }
 
+// UpdateSkills handles the update member skills request
 func (e *Controller) UpdateSkills() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		memberId := ctx.Param("id")
@@ -84,6 +84,7 @@ func (e *Controller) UpdateSkills() gin.HandlerFunc {
 	}
 }
 
+// DeleteSkill handles the deletion of one of the member's skills
 func (e *Controller) DeleteSkill() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		memberId := ctx.Param("id")
@@ -98,6 +99,8 @@ func (e *Controller) DeleteSkill() gin.HandlerFunc {
 	}
 }
 
+// PostHeist creates a new heist and validates it
+// Also it automatically calls the start and end heist at the right moment
 func (e *Controller) PostHeist() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var heistDto models.HeistDto
@@ -106,7 +109,6 @@ func (e *Controller) PostHeist() gin.HandlerFunc {
 			ctx.String(http.StatusBadRequest, "post request is not valid")
 			return
 		}
-
 
 		id, err := e.heistResponse.InsertHeist(heistDto)
 		if err != nil {
@@ -126,7 +128,8 @@ func (e *Controller) PostHeist() gin.HandlerFunc {
 	}
 }
 
-
+// AutomaticStart automatically starts a heist depending on the heist's start time and
+// email to the heist members that the heist has finished
 func (e *Controller) AutomaticStart(id string, quit <-chan bool, time time.Time, ) {
 	g := gocron.NewScheduler()
 	members, _, err := e.heistResponse.GetHeistMembersByHeistId(context.Background(), id)
@@ -150,6 +153,8 @@ func (e *Controller) AutomaticStart(id string, quit <-chan bool, time time.Time,
 	return
 }
 
+// AutomaticEnd automatically ends a heist depending on the heist's end time and sends and
+// email to the heist members that the heist has finished
 func (e *Controller) AutomaticEnd(id string, quit <-chan bool, time time.Time) {
 	g := gocron.NewScheduler()
 	members, _, err := e.heistResponse.GetHeistMembersByHeistId(context.Background(), id)
@@ -172,8 +177,7 @@ func (e *Controller) AutomaticEnd(id string, quit <-chan bool, time time.Time) {
 	return
 }
 
-
-
+// UpdateHeistSkills handles the update request for certain heist's skills
 func (e *Controller) UpdateHeistSkills() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		heistId := ctx.Param("id")
@@ -198,6 +202,7 @@ func (e *Controller) UpdateHeistSkills() gin.HandlerFunc {
 	}
 }
 
+// EligibleMembers returns the members that are eligible for the given heist
 func (e *Controller) EligibleMembers() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.Param("id")
@@ -214,6 +219,8 @@ func (e *Controller) EligibleMembers() gin.HandlerFunc {
 	}
 }
 
+// AddMembersToHeist allows us to add members to a certain heist, when we add
+//them, those members will be notified via email
 func (e *Controller) AddMembersToHeist() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.Param("id")
@@ -224,7 +231,7 @@ func (e *Controller) AddMembersToHeist() gin.HandlerFunc {
 			return
 		}
 
-		code, err , mails:= e.heistResponse.AddHeistMembers(members, id)
+		code, err, mails := e.heistResponse.AddHeistMembers(members, id)
 		if err != nil {
 			if code == "404" {
 				ctx.String(http.StatusNotFound, "heist not found")
@@ -242,6 +249,7 @@ func (e *Controller) AddMembersToHeist() gin.HandlerFunc {
 	}
 }
 
+// StartHeist allows us to manually start a heist, the members of the heist will also be notified via email
 func (e *Controller) StartHeist() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.Param("id")
@@ -260,6 +268,7 @@ func (e *Controller) StartHeist() gin.HandlerFunc {
 	}
 }
 
+// GetMember show us the given member's information
 func (e *Controller) GetMember() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.Param("id")
@@ -278,6 +287,7 @@ func (e *Controller) GetMember() gin.HandlerFunc {
 	}
 }
 
+// GetMemberSkills show us the given member skills' information
 func (e *Controller) GetMemberSkills() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.Param("id")
@@ -295,6 +305,7 @@ func (e *Controller) GetMemberSkills() gin.HandlerFunc {
 	}
 }
 
+// GetHeist show us the given heist's information
 func (e *Controller) GetHeist() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.Param("id")
@@ -312,6 +323,7 @@ func (e *Controller) GetHeist() gin.HandlerFunc {
 	}
 }
 
+// GetHeistMembers show us the given heist's member information
 func (e *Controller) GetHeistMembers() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.Param("id")
@@ -328,7 +340,8 @@ func (e *Controller) GetHeistMembers() gin.HandlerFunc {
 	}
 }
 
-func(e *Controller) GetHeistSkills() gin.HandlerFunc{
+// GetHeistSkills show us the given heist's skill information
+func (e *Controller) GetHeistSkills() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.Param("id")
 		skills, err := e.heistResponse.GetHeistSkillsByHeistId(ctx, id)
@@ -341,7 +354,8 @@ func(e *Controller) GetHeistSkills() gin.HandlerFunc{
 	}
 }
 
-func(e *Controller) GetHeistStatus() gin.HandlerFunc{
+// GetHeistStatus shows us the status of a certain heist
+func (e *Controller) GetHeistStatus() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.Param("id")
 		status, err := e.heistResponse.GetHeistStatusByHeistId(ctx, id)
@@ -354,8 +368,8 @@ func(e *Controller) GetHeistStatus() gin.HandlerFunc{
 	}
 }
 
-
-func(e *Controller) GetHeistOutcome() gin.HandlerFunc {
+// GetHeistOutcome shows us the outcome of a certain heist
+func (e *Controller) GetHeistOutcome() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.Param("id")
 		status, exists, err := e.heistResponse.GetHeistOutcomeByHeistId(ctx, id)
@@ -371,6 +385,3 @@ func(e *Controller) GetHeistOutcome() gin.HandlerFunc {
 		ctx.JSON(http.StatusOK, status)
 	}
 }
-
-
-

@@ -1,12 +1,11 @@
 package models
 
-// Member is a storage model representation of a member.
-
+// Member is the member storage model
 type Member struct {
-	Id string
-	Name string
-	Sex string
-	Email string
+	Id          string
+	Name        string
+	Sex         string
+	Email       string
 	MainSkillId string
-	Status string
+	Status      string
 }

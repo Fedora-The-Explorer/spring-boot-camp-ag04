@@ -26,8 +26,6 @@ const getHeistSkills = "/heist/:id/skills"
 const getHeistStatus = "/heist/:id/status"
 const getHeistOutcome = "/heist/:id/outcome"
 
-
-
 // WebServer Api server
 type WebServer struct {
 	router             *gin.Engine

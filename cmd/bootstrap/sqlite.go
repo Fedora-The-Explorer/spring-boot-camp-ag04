@@ -14,4 +14,3 @@ func Sqlite() *sql.DB {
 
 	return db
 }
-

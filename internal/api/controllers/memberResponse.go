@@ -13,5 +13,4 @@ type MemberResponse interface {
 	GetEligibleMembers(ctx context.Context, id string) (models.EligibleMemberDto, bool, error)
 	GetMemberById(ctx context.Context, id string) (models.MemberDto, bool, error)
 	GetMemberSkillsById(ctx context.Context, id string) (models.MemberSkillsDto, bool, error)
-
 }

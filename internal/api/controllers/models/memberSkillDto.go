@@ -1,7 +1,7 @@
 package models
 
-// MemberSkillsDto is the insert request dto model
+// MemberSkillsDto is the member skills dto model
 type MemberSkillsDto []struct {
-	Name string `json:"name"`
+	Name  string `json:"name"`
 	Level string `json:"level"`
 }

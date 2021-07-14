@@ -5,7 +5,7 @@ import (
 )
 
 // MemberValidator validates member insert requests
-type MemberValidator interface{
+type MemberValidator interface {
 	MemberIsValid(memberDto models.MemberDto) bool
 	MemberSkillsUpdateValidator(memberSkillUpdateDto models.MemberSkillsUpdateDto) bool
 }
