@@ -397,7 +397,7 @@ func (r *HeistRepository) AddHeistMembers(members []string, id string) (string, 
 	var memberIds []string
 	code, err := r.checkHeist(id, "PLANNING")
 	if err != nil {
-		return code, err
+		return code, err, nil
 	}
 
 	for _, member := range members{
@@ -489,7 +489,10 @@ func(r *HeistRepository) EndHeist(id string) (string, error){
 	}
 	finished := "FINISHED"
 	r.dbExecutor.Exec("UPDATE heists SET status='" + finished + "'WHERE id='" + id + "';")
-
+	heist, err := r.queryGetHeistById(context.Background(), id)
+	if err != nil {
+		return "", err
+	}
 
 	members, err := r.queryGetMemberIdByHeistId(context.Background(), id)
 	if err != nil {
@@ -545,8 +548,69 @@ func(r *HeistRepository) EndHeist(id string) (string, error){
 		}
 	}
 
+	r.skillImprovement(members, heist, id)
 	r.dbExecutor.Exec("UPDATE heists SET outcome='" + outcome + "'WHERE id='" + id + "';")
 	return "", nil
+}
+
+func (r *HeistRepository) skillImprovement(memberIds []string, heist storagemodels.Heist, id string){
+	row, err := r.dbExecutor.QueryContext(context.Background(), "SELECT skillId FROM heistSkills WHERE heistId='"+id+"';")
+	if err != nil {
+		panic(err)
+	}
+	var skillIds []string
+	for row.Next(){
+		var skillId string
+		err = row.Scan(&skillId)
+		skillIds = append(skillIds, skillId)
+	}
+
+	overlappingSKills := r.queryGetOverlapHeistMemberSkills(skillIds, memberIds)
+	levelUpTime := 86400
+	timeDiff := heist.EndTime.Sub(heist.StartTime)
+	seconds := timeDiff.Seconds()
+	toLevelUp := int(seconds)/levelUpTime
+	for _, skill := range overlappingSKills {
+		levelUp := toLevelUp
+		currentLevel := skill.Level
+		for len(currentLevel)<10 && levelUp>0{
+			currentLevel += "*"
+			levelUp--
+		}
+		r.dbExecutor.Exec("UPDATE memberSkills SET level='" + currentLevel + "'WHERE skillId='" + skill.SkillId +  "', memberId='" + skill.MemberId + "';")
+	}
+}
+
+func (r *HeistRepository) queryGetOverlapHeistMemberSkills(skillIds []string, memberIds []string) []storagemodels.MemberSkill{
+	var row *sql.Rows
+	var err error
+
+	for _, skill := range skillIds{
+		for _, member := range memberIds{
+			row, err = r.dbExecutor.QueryContext(context.Background(), "SELECT * FROM memberSkills WHERE skillId='"+skill+ "', memberId='" + member + "';")
+		}
+	}
+
+	var allSkills []storagemodels.MemberSkill
+	for row.Next(){
+		var memberId string
+		var skillId string
+		var name string
+		var level string
+
+		err = row.Scan(&memberId, &skillId, &name, &level)
+		if err != nil {
+			panic(err)
+		}
+		allSkills = append(allSkills, storagemodels.MemberSkill{
+			MemberId: memberId,
+			SkillId:  skillId,
+			Name:     name,
+			Level:    level,
+		})
+	}
+
+	return allSkills
 }
 
 func (r *HeistRepository) checkPossibleHeistMember(member storagemodels.Member) error {
