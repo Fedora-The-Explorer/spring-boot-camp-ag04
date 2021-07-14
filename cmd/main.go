@@ -3,13 +3,22 @@ package main
 import (
 	"elProfessor/cmd/bootstrap"
 	"elProfessor/cmd/config"
-	tasks "elProfessor/internal/tasks"
+	"elProfessor/internal/tasks"
+	"log"
 )
 
 func main() {
+	log.Println("Bootstrap initiated")
+
 	config.Load()
 
-	api := bootstrap.Api()
+	signalHandler := bootstrap.SignalHandler()
+	db := bootstrap.Sqlite()
+	api := bootstrap.Api(db)
 
-	tasks.RunTasks(api)
+	log.Println("Bootstrap finished. Heist API is starting")
+
+	tasks.RunTasks(signalHandler, api)
+
+	log.Println("Heist API finished gracefully")
 }
