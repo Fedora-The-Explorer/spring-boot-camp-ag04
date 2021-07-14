@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"elProfessor/internal/api/controllers/models"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -15,15 +16,17 @@ type Controller struct {
 	heistResponse   HeistResponse
 	memberValidator MemberValidator
 	heistValidator  HeistValidator
+	smtpService SmtpService
 }
 
 // NewController creates a new instance of Controller
-func NewController(memberResponse MemberResponse, heistResponse HeistResponse, memberValidator MemberValidator, heistValidator HeistValidator) *Controller {
+func NewController(memberResponse MemberResponse, heistResponse HeistResponse, memberValidator MemberValidator, heistValidator HeistValidator, 	smtpService SmtpService) *Controller {
 	return &Controller{
 		memberResponse:  memberResponse,
 		heistResponse:   heistResponse,
 		memberValidator: memberValidator,
 		heistValidator:  heistValidator,
+		smtpService: smtpService,
 	}
 }
 
@@ -47,6 +50,11 @@ func (e *Controller) PostMember() gin.HandlerFunc {
 			ctx.String(http.StatusBadRequest, "request could not be processed.")
 			return
 		}
+		message := []byte("You have been added as a possible choice for a heist member")
+		to := []string{
+			memberDto.Email,
+		}
+		e.smtpService.SendEmail(to, message)
 		ctx.Status(http.StatusCreated)
 	}
 }
@@ -118,22 +126,47 @@ func (e *Controller) HeistAdd() gin.HandlerFunc {
 }
 
 
-func (e *Controller) AutomaticStart(id string, quit <-chan bool, time time.Time) {
+func (e *Controller) AutomaticStart(id string, quit <-chan bool, time time.Time, ) {
 	g := gocron.NewScheduler()
-	err := g.Every(1).Hour().From(&time).Do(e.heistResponse.StartHeist(id))
+	members, _, err := e.heistResponse.GetHeistMembersByHeistId(context.Background(), id)
 	if err != nil {
 		return
 	}
+	err = g.Every(1).Hour().From(&time).Do(e.heistResponse.StartHeist(id))
+	if err != nil {
+		return
+	}
+
+	var emails []string
+	for _, member := range members {
+		emails = append(emails, member.Email)
+	}
+
+	message := []byte("The heist has started!")
+	e.smtpService.SendEmail(emails, message)
+
 	<-quit
 	return
 }
 
 func (e *Controller) AutomaticEnd(id string, quit <-chan bool, time time.Time) {
 	g := gocron.NewScheduler()
-	err := g.Every(1).Hour().From(&time).Do(e.heistResponse.EndHeist(id))
+	members, _, err := e.heistResponse.GetHeistMembersByHeistId(context.Background(), id)
 	if err != nil {
 		return
 	}
+	err = g.Every(1).Hour().From(&time).Do(e.heistResponse.EndHeist(id))
+	if err != nil {
+		return
+	}
+	var emails []string
+	for _, member := range members {
+		emails = append(emails, member.Email)
+	}
+
+	message := []byte("The heist has ended!")
+	e.smtpService.SendEmail(emails, message)
+
 	<-quit
 	return
 }
@@ -176,7 +209,6 @@ func (e *Controller) EligibleMembers() gin.HandlerFunc {
 			ctx.String(http.StatusNotFound, "failed to get heist with given id")
 			return
 		}
-
 		ctx.JSON(http.StatusOK, members)
 	}
 }
@@ -191,7 +223,7 @@ func (e *Controller) AddMembersToHeist() gin.HandlerFunc {
 			return
 		}
 
-		code, err := e.heistResponse.AddHeistMembers(members, id)
+		code, err , mails:= e.heistResponse.AddHeistMembers(members, id)
 		if err != nil {
 			if code == "404" {
 				ctx.String(http.StatusNotFound, "heist not found")
@@ -201,6 +233,9 @@ func (e *Controller) AddMembersToHeist() gin.HandlerFunc {
 				return
 			}
 		}
+
+		message := []byte("You have been added as a member of a heist")
+		e.smtpService.SendEmail(mails, message)
 
 		ctx.Status(http.StatusNoContent)
 	}
@@ -288,7 +323,6 @@ func (e *Controller) GetHeistMembers() gin.HandlerFunc {
 			ctx.String(http.StatusNotFound, "failed to get member skills with given member id")
 			return
 		}
-
 		ctx.JSON(http.StatusOK, members)
 	}
 }
@@ -336,4 +370,6 @@ func(e *Controller) GetHeistOutcome() gin.HandlerFunc {
 		ctx.JSON(http.StatusOK, status)
 	}
 }
+
+
 

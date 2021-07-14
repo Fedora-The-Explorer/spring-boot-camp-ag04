@@ -24,7 +24,7 @@ func (h HeistResponse) UpdateHeistSkills(ctx context.Context, heistSkills domain
 	return h.heistHandler.UpdateHeistSkills(ctx, heistSkills,heistId)
 }
 
-func(h HeistResponse) 	AddHeistMembers(members []string, id string) (string,error){
+func(h HeistResponse) 	AddHeistMembers(members []string, id string) (string,error, []string){
 	return h.heistHandler.AddHeistMembers(members, id)
 }
 
@@ -36,7 +36,7 @@ func (h HeistResponse) 	GetHeistById(ctx context.Context, id string) (domainmode
 	return h.heistHandler.GetHeistById(ctx, id)
 }
 
-func (h HeistResponse) GetHeistMembersByHeistId(ctx context.Context, id string) (domainmodels.MemberDto, bool, error) {
+func (h HeistResponse) GetHeistMembersByHeistId(ctx context.Context, id string) ([]domainmodels.MemberDto, bool, error) {
 	return h.heistHandler.GetHeistMembersByHeistId(ctx, id)
 }
 
