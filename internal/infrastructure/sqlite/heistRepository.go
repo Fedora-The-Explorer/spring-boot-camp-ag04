@@ -17,7 +17,7 @@ type HeistRepository struct {
 	heistMapper HeistMapper
 }
 
-func NewHeistRepository(dbExecutor DatabaseExecutor, heistMapper HeistMapper) * HeistRepository{
+func NewHeistRepository(dbExecutor DatabaseExecutor, heistMapper HeistMapper) *HeistRepository{
 	return &HeistRepository{
 		dbExecutor: dbExecutor,
 		heistMapper: heistMapper,

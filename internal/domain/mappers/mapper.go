@@ -10,6 +10,7 @@ import (
 type HeistMapper struct{
 }
 
+
 func NewHeistMapper() *HeistMapper{
 	return &HeistMapper{}
 }

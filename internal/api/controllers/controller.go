@@ -19,6 +19,7 @@ type Controller struct {
 	smtpService SmtpService
 }
 
+
 // NewController creates a new instance of Controller
 func NewController(memberResponse MemberResponse, heistResponse HeistResponse, memberValidator MemberValidator, heistValidator HeistValidator, 	smtpService SmtpService) *Controller {
 	return &Controller{
@@ -97,7 +98,7 @@ func (e *Controller) DeleteSkill() gin.HandlerFunc {
 	}
 }
 
-func (e *Controller) HeistAdd() gin.HandlerFunc {
+func (e *Controller) PostHeist() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var heistDto models.HeistDto
 		err := ctx.ShouldBindWith(&heistDto, binding.JSON)

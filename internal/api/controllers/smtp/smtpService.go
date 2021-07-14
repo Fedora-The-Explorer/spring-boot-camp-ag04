@@ -12,15 +12,15 @@ const smtpUsername = "AKIA3QRJDSTT4P7LI2NJ"
 const from = "luka.curic@ag04.io"
 
 
-type EmailService struct {
+type SmtpService struct {
 }
 // NewEmailService creates a new instance of HeistValidator
-func NewEmailService () *EmailService{
-	return &EmailService{
+func NewEmailService () *SmtpService{
+	return &SmtpService{
 	}
 }
 
-func (s *EmailService) SendEmail(to []string, message []byte){
+func (s *SmtpService) SendEmail(to []string, message []byte){
 
 	auth := smtp.PlainAuth("", smtpUsername, smtpPassword, smtpHost)
 	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, message)
