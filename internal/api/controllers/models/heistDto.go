@@ -1,9 +1,12 @@
 package models
 
+import "time"
+
 type HeistDto struct {
 	Name string `json:"name"`
 	Location string `json:"location"`
-	StartTime string `json:"startTime"`
-	EndTime string `json:"endTime"`
+	StartTime time.Time `json:"startTime"`
+	EndTime time.Time `json:"endTime"`
 	Skills HeistSkillsDto `json:"skills"`
+	Status string `json:"status"`
 }

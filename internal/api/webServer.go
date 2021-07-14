@@ -18,6 +18,14 @@ const heistUpdate = "/heist/:id/skills"
 const eligibleMembers = "/heist/:id/eligible_members"
 const heistMembers = "/heist/:id/members"
 const heistStart = "/heist/:id/start"
+const getMember = "/member/:id"
+const getMemberSkills = "/member/:id/skills"
+const getHeist = "/heist/:id"
+const getHeistMembers = "/heist/:id/members"
+const getHeistSkills = "/heist/:id/skills"
+const getHeistStatus = "/heist/:id/status"
+const getHeistOutcome = "/heist/:id/outcome"
+
 
 
 // WebServer Api server
@@ -85,7 +93,13 @@ func (w *WebServer) registerRoutes(ctrl Controller) {
 	w.router.GET(eligibleMembers, ctrl.EligibleMembers())
 	w.router.PUT(heistMembers, ctrl.AddMembersToHeist())
 	w.router.PUT(heistStart, ctrl.StartHeist())
-
+	w.router.GET(getMember, ctrl.GetMember())
+	w.router.GET(getMemberSkills, ctrl.GetMemberSkills())
+	w.router.GET(getHeist, ctrl.GetHeist())
+	w.router.GET(getHeistMembers, ctrl.GetHeistMembers())
+	w.router.GET(getHeistSkills, ctrl.GetHeistSkills())
+	w.router.GET(getHeistStatus, ctrl.GetHeistStatus())
+	w.router.GET(getHeistOutcome, ctrl.GetHeistOutcome())
 
 }
 
@@ -99,4 +113,11 @@ type Controller interface {
 	EligibleMembers() gin.HandlerFunc
 	AddMembersToHeist() gin.HandlerFunc
 	StartHeist() gin.HandlerFunc
+	GetMember() gin.HandlerFunc
+	GetMemberSkills() gin.HandlerFunc
+	GetHeist() gin.HandlerFunc
+	GetHeistMembers() gin.HandlerFunc
+	GetHeistSkills() gin.HandlerFunc
+	GetHeistStatus() gin.HandlerFunc
+	GetHeistOutcome() gin.HandlerFunc
 }
