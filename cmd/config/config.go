@@ -5,6 +5,7 @@ import "github.com/kelseyhightower/envconfig"
 var Cfg Config
 
 type Config struct {
+	SqliteDatabase string    `split_words:"true" required:"true"`
 	Api    apiConfig    `split_words:"true"`
 }
 
