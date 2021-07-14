@@ -1,6 +1,6 @@
 package bootstrap
 
-import "elProfessor/tasks"
+import "elProfessor/internal/tasks"
 
 // SignalHandler bootstraps the signal handler.
 func SignalHandler() *tasks.SignalHandler {
