@@ -1,8 +1,6 @@
 package validators
 
-import (
-	"elProfessor/internal/api/controllers/models"
-)
+import "elProfessor/internal/api/controllers/models"
 
 // MemberValidator validates insert member requests
 type MemberValidator struct {
